@@ -128,7 +128,8 @@ MAV_AUTOPILOT_PPZ = 9 # PPZ UAV - http://nongnu.org/paparazzi
 MAV_AUTOPILOT_UDB = 10 # UAV Dev Board
 MAV_AUTOPILOT_FP = 11 # FlexiPilot
 MAV_AUTOPILOT_PX4 = 12 # PX4 Autopilot - http://pixhawk.ethz.ch/px4/
-MAV_AUTOPILOT_ENUM_END = 13 # 
+MAV_AUTOPILOT_SMACCMPILOT = 13 # SMACCMPilot - http://smaccmpilot.org
+MAV_AUTOPILOT_ENUM_END = 14 # 
 
 # MAV_TYPE
 MAV_TYPE_GENERIC = 0 # Generic micro air vehicle.
@@ -508,6 +509,10 @@ MAVLINK_MSG_ID_VISION_POSITION_ESTIMATE = 102
 MAVLINK_MSG_ID_VISION_SPEED_ESTIMATE = 103
 MAVLINK_MSG_ID_VICON_POSITION_ESTIMATE = 104
 MAVLINK_MSG_ID_HIGHRES_IMU = 105
+MAVLINK_MSG_ID_OMNIDIRECTIONAL_FLOW = 106
+MAVLINK_MSG_ID_FILE_TRANSFER_START = 110
+MAVLINK_MSG_ID_FILE_TRANSFER_DIR_LIST = 111
+MAVLINK_MSG_ID_FILE_TRANSFER_RES = 112
 MAVLINK_MSG_ID_BATTERY_STATUS = 147
 MAVLINK_MSG_ID_SETPOINT_8DOF = 148
 MAVLINK_MSG_ID_SETPOINT_6DOF = 149
@@ -1070,10 +1075,10 @@ class MAVLink_servo_output_raw_message(MAVLink_message):
         modulation is as follows: 1000 microseconds: 0%, 2000
         microseconds: 100%.
         '''
-        def __init__(self, time_boot_ms, port, servo1_raw, servo2_raw, servo3_raw, servo4_raw, servo5_raw, servo6_raw, servo7_raw, servo8_raw):
+        def __init__(self, time_usec, port, servo1_raw, servo2_raw, servo3_raw, servo4_raw, servo5_raw, servo6_raw, servo7_raw, servo8_raw):
                 MAVLink_message.__init__(self, MAVLINK_MSG_ID_SERVO_OUTPUT_RAW, 'SERVO_OUTPUT_RAW')
-                self._fieldnames = ['time_boot_ms', 'port', 'servo1_raw', 'servo2_raw', 'servo3_raw', 'servo4_raw', 'servo5_raw', 'servo6_raw', 'servo7_raw', 'servo8_raw']
-                self.time_boot_ms = time_boot_ms
+                self._fieldnames = ['time_usec', 'port', 'servo1_raw', 'servo2_raw', 'servo3_raw', 'servo4_raw', 'servo5_raw', 'servo6_raw', 'servo7_raw', 'servo8_raw']
+                self.time_usec = time_usec
                 self.port = port
                 self.servo1_raw = servo1_raw
                 self.servo2_raw = servo2_raw
@@ -1085,7 +1090,7 @@ class MAVLink_servo_output_raw_message(MAVLink_message):
                 self.servo8_raw = servo8_raw
 
         def pack(self, mav):
-                return MAVLink_message.pack(self, mav, 242, struct.pack('<IHHHHHHHHB', self.time_boot_ms, self.servo1_raw, self.servo2_raw, self.servo3_raw, self.servo4_raw, self.servo5_raw, self.servo6_raw, self.servo7_raw, self.servo8_raw, self.port))
+                return MAVLink_message.pack(self, mav, 222, struct.pack('<IHHHHHHHHB', self.time_usec, self.servo1_raw, self.servo2_raw, self.servo3_raw, self.servo4_raw, self.servo5_raw, self.servo6_raw, self.servo7_raw, self.servo8_raw, self.port))
 
 class MAVLink_mission_request_partial_list_message(MAVLink_message):
         '''
@@ -1943,7 +1948,6 @@ class MAVLink_vicon_position_estimate_message(MAVLink_message):
                 return MAVLink_message.pack(self, mav, 56, struct.pack('<Qffffff', self.usec, self.x, self.y, self.z, self.roll, self.pitch, self.yaw))
 
 class MAVLink_highres_imu_message(MAVLink_message):
-
         '''
         The IMU readings in SI units in NED body frame
         '''
@@ -1968,6 +1972,67 @@ class MAVLink_highres_imu_message(MAVLink_message):
 
         def pack(self, mav):
                 return MAVLink_message.pack(self, mav, 93, struct.pack('<QfffffffffffffH', self.time_usec, self.xacc, self.yacc, self.zacc, self.xgyro, self.ygyro, self.zgyro, self.xmag, self.ymag, self.zmag, self.abs_pressure, self.diff_pressure, self.pressure_alt, self.temperature, self.fields_updated))
+
+class MAVLink_omnidirectional_flow_message(MAVLink_message):
+        '''
+        Optical flow from an omnidirectional flow sensor (e.g. PX4FLOW
+        with wide angle lens)
+        '''
+        def __init__(self, time_usec, sensor_id, left, right, quality, front_distance_m):
+                MAVLink_message.__init__(self, MAVLINK_MSG_ID_OMNIDIRECTIONAL_FLOW, 'OMNIDIRECTIONAL_FLOW')
+                self._fieldnames = ['time_usec', 'sensor_id', 'left', 'right', 'quality', 'front_distance_m']
+                self.time_usec = time_usec
+                self.sensor_id = sensor_id
+                self.left = left
+                self.right = right
+                self.quality = quality
+                self.front_distance_m = front_distance_m
+
+        def pack(self, mav):
+                return MAVLink_message.pack(self, mav, 211, struct.pack('<Qf10h10hBB', self.time_usec, self.front_distance_m, self.left, self.right, self.sensor_id, self.quality))
+
+class MAVLink_file_transfer_start_message(MAVLink_message):
+        '''
+        Begin file transfer
+        '''
+        def __init__(self, transfer_uid, dest_path, direction, file_size, flags):
+                MAVLink_message.__init__(self, MAVLINK_MSG_ID_FILE_TRANSFER_START, 'FILE_TRANSFER_START')
+                self._fieldnames = ['transfer_uid', 'dest_path', 'direction', 'file_size', 'flags']
+                self.transfer_uid = transfer_uid
+                self.dest_path = dest_path
+                self.direction = direction
+                self.file_size = file_size
+                self.flags = flags
+
+        def pack(self, mav):
+                return MAVLink_message.pack(self, mav, 235, struct.pack('<QI240sBB', self.transfer_uid, self.file_size, self.dest_path, self.direction, self.flags))
+
+class MAVLink_file_transfer_dir_list_message(MAVLink_message):
+        '''
+        Get directory listing
+        '''
+        def __init__(self, transfer_uid, dir_path, flags):
+                MAVLink_message.__init__(self, MAVLINK_MSG_ID_FILE_TRANSFER_DIR_LIST, 'FILE_TRANSFER_DIR_LIST')
+                self._fieldnames = ['transfer_uid', 'dir_path', 'flags']
+                self.transfer_uid = transfer_uid
+                self.dir_path = dir_path
+                self.flags = flags
+
+        def pack(self, mav):
+                return MAVLink_message.pack(self, mav, 93, struct.pack('<Q240sB', self.transfer_uid, self.dir_path, self.flags))
+
+class MAVLink_file_transfer_res_message(MAVLink_message):
+        '''
+        File transfer result
+        '''
+        def __init__(self, transfer_uid, result):
+                MAVLink_message.__init__(self, MAVLINK_MSG_ID_FILE_TRANSFER_RES, 'FILE_TRANSFER_RES')
+                self._fieldnames = ['transfer_uid', 'result']
+                self.transfer_uid = transfer_uid
+                self.result = result
+
+        def pack(self, mav):
+                return MAVLink_message.pack(self, mav, 124, struct.pack('<QB', self.transfer_uid, self.result))
 
 class MAVLink_battery_status_message(MAVLink_message):
         '''
@@ -2156,7 +2221,7 @@ mavlink_map = {
         MAVLINK_MSG_ID_GLOBAL_POSITION_INT : ( '<IiiiihhhH', MAVLink_global_position_int_message, [0, 1, 2, 3, 4, 5, 6, 7, 8], 104 ),
         MAVLINK_MSG_ID_RC_CHANNELS_SCALED : ( '<IhhhhhhhhBB', MAVLink_rc_channels_scaled_message, [0, 9, 1, 2, 3, 4, 5, 6, 7, 8, 10], 237 ),
         MAVLINK_MSG_ID_RC_CHANNELS_RAW : ( '<IHHHHHHHHBB', MAVLink_rc_channels_raw_message, [0, 9, 1, 2, 3, 4, 5, 6, 7, 8, 10], 244 ),
-        MAVLINK_MSG_ID_SERVO_OUTPUT_RAW : ( '<IHHHHHHHHB', MAVLink_servo_output_raw_message, [0, 9, 1, 2, 3, 4, 5, 6, 7, 8], 242 ),
+        MAVLINK_MSG_ID_SERVO_OUTPUT_RAW : ( '<IHHHHHHHHB', MAVLink_servo_output_raw_message, [0, 9, 1, 2, 3, 4, 5, 6, 7, 8], 222 ),
         MAVLINK_MSG_ID_MISSION_REQUEST_PARTIAL_LIST : ( '<hhBB', MAVLink_mission_request_partial_list_message, [2, 3, 0, 1], 212 ),
         MAVLINK_MSG_ID_MISSION_WRITE_PARTIAL_LIST : ( '<hhBB', MAVLink_mission_write_partial_list_message, [2, 3, 0, 1], 9 ),
         MAVLINK_MSG_ID_MISSION_ITEM : ( '<fffffffHHBBBBB', MAVLink_mission_item_message, [9, 10, 7, 11, 8, 12, 13, 0, 1, 2, 3, 4, 5, 6], 254 ),
@@ -2204,6 +2269,10 @@ mavlink_map = {
         MAVLINK_MSG_ID_VISION_SPEED_ESTIMATE : ( '<Qfff', MAVLink_vision_speed_estimate_message, [0, 1, 2, 3], 208 ),
         MAVLINK_MSG_ID_VICON_POSITION_ESTIMATE : ( '<Qffffff', MAVLink_vicon_position_estimate_message, [0, 1, 2, 3, 4, 5, 6], 56 ),
         MAVLINK_MSG_ID_HIGHRES_IMU : ( '<QfffffffffffffH', MAVLink_highres_imu_message, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], 93 ),
+        MAVLINK_MSG_ID_OMNIDIRECTIONAL_FLOW : ( '<Qf10h10hBB', MAVLink_omnidirectional_flow_message, [0, 4, 2, 3, 5, 1], 211 ),
+        MAVLINK_MSG_ID_FILE_TRANSFER_START : ( '<QI240sBB', MAVLink_file_transfer_start_message, [0, 2, 3, 1, 4], 235 ),
+        MAVLINK_MSG_ID_FILE_TRANSFER_DIR_LIST : ( '<Q240sB', MAVLink_file_transfer_dir_list_message, [0, 1, 2], 93 ),
+        MAVLINK_MSG_ID_FILE_TRANSFER_RES : ( '<QB', MAVLink_file_transfer_res_message, [0, 1], 124 ),
         MAVLINK_MSG_ID_BATTERY_STATUS : ( '<HHHHHHhBb', MAVLink_battery_status_message, [7, 0, 1, 2, 3, 4, 5, 6, 8], 42 ),
         MAVLINK_MSG_ID_SETPOINT_8DOF : ( '<ffffffffB', MAVLink_setpoint_8dof_message, [8, 0, 1, 2, 3, 4, 5, 6, 7], 241 ),
         MAVLINK_MSG_ID_SETPOINT_6DOF : ( '<ffffffB', MAVLink_setpoint_6dof_message, [6, 0, 1, 2, 3, 4, 5], 15 ),
@@ -3392,14 +3461,14 @@ class MAVLink(object):
                 '''
                 return self.send(self.rc_channels_raw_encode(time_boot_ms, port, chan1_raw, chan2_raw, chan3_raw, chan4_raw, chan5_raw, chan6_raw, chan7_raw, chan8_raw, rssi))
             
-        def servo_output_raw_encode(self, time_boot_ms, port, servo1_raw, servo2_raw, servo3_raw, servo4_raw, servo5_raw, servo6_raw, servo7_raw, servo8_raw):
+        def servo_output_raw_encode(self, time_usec, port, servo1_raw, servo2_raw, servo3_raw, servo4_raw, servo5_raw, servo6_raw, servo7_raw, servo8_raw):
                 '''
                 The RAW values of the servo outputs (for RC input from the remote, use
                 the RC_CHANNELS messages). The standard PPM modulation
                 is as follows: 1000 microseconds: 0%, 2000
                 microseconds: 100%.
 
-                time_boot_ms              : Timestamp (microseconds since system boot) (uint32_t)
+                time_usec                 : Timestamp (microseconds since system boot) (uint32_t)
                 port                      : Servo output port (set of 8 outputs = 1 port). Most MAVs will just use one, but this allows to encode more than 8 servos. (uint8_t)
                 servo1_raw                : Servo output 1 value, in microseconds (uint16_t)
                 servo2_raw                : Servo output 2 value, in microseconds (uint16_t)
@@ -3411,18 +3480,18 @@ class MAVLink(object):
                 servo8_raw                : Servo output 8 value, in microseconds (uint16_t)
 
                 '''
-                msg = MAVLink_servo_output_raw_message(time_boot_ms, port, servo1_raw, servo2_raw, servo3_raw, servo4_raw, servo5_raw, servo6_raw, servo7_raw, servo8_raw)
+                msg = MAVLink_servo_output_raw_message(time_usec, port, servo1_raw, servo2_raw, servo3_raw, servo4_raw, servo5_raw, servo6_raw, servo7_raw, servo8_raw)
                 msg.pack(self)
                 return msg
             
-        def servo_output_raw_send(self, time_boot_ms, port, servo1_raw, servo2_raw, servo3_raw, servo4_raw, servo5_raw, servo6_raw, servo7_raw, servo8_raw):
+        def servo_output_raw_send(self, time_usec, port, servo1_raw, servo2_raw, servo3_raw, servo4_raw, servo5_raw, servo6_raw, servo7_raw, servo8_raw):
                 '''
                 The RAW values of the servo outputs (for RC input from the remote, use
                 the RC_CHANNELS messages). The standard PPM modulation
                 is as follows: 1000 microseconds: 0%, 2000
                 microseconds: 100%.
 
-                time_boot_ms              : Timestamp (microseconds since system boot) (uint32_t)
+                time_usec                 : Timestamp (microseconds since system boot) (uint32_t)
                 port                      : Servo output port (set of 8 outputs = 1 port). Most MAVs will just use one, but this allows to encode more than 8 servos. (uint8_t)
                 servo1_raw                : Servo output 1 value, in microseconds (uint16_t)
                 servo2_raw                : Servo output 2 value, in microseconds (uint16_t)
@@ -3434,7 +3503,7 @@ class MAVLink(object):
                 servo8_raw                : Servo output 8 value, in microseconds (uint16_t)
 
                 '''
-                return self.send(self.servo_output_raw_encode(time_boot_ms, port, servo1_raw, servo2_raw, servo3_raw, servo4_raw, servo5_raw, servo6_raw, servo7_raw, servo8_raw))
+                return self.send(self.servo_output_raw_encode(time_usec, port, servo1_raw, servo2_raw, servo3_raw, servo4_raw, servo5_raw, servo6_raw, servo7_raw, servo8_raw))
             
         def mission_request_partial_list_encode(self, target_system, target_component, start_index, end_index):
                 '''
@@ -5021,6 +5090,112 @@ class MAVLink(object):
 
                 '''
                 return self.send(self.highres_imu_encode(time_usec, xacc, yacc, zacc, xgyro, ygyro, zgyro, xmag, ymag, zmag, abs_pressure, diff_pressure, pressure_alt, temperature, fields_updated))
+            
+        def omnidirectional_flow_encode(self, time_usec, sensor_id, left, right, quality, front_distance_m):
+                '''
+                Optical flow from an omnidirectional flow sensor (e.g. PX4FLOW with
+                wide angle lens)
+
+                time_usec                 : Timestamp (microseconds, synced to UNIX time or since system boot) (uint64_t)
+                sensor_id                 : Sensor ID (uint8_t)
+                left                      : Flow in deci pixels (1 = 0.1 pixel) on left hemisphere (int16_t)
+                right                     : Flow in deci pixels (1 = 0.1 pixel) on right hemisphere (int16_t)
+                quality                   : Optical flow quality / confidence. 0: bad, 255: maximum quality (uint8_t)
+                front_distance_m          : Front distance in meters. Positive value (including zero): distance known. Negative value: Unknown distance (float)
+
+                '''
+                msg = MAVLink_omnidirectional_flow_message(time_usec, sensor_id, left, right, quality, front_distance_m)
+                msg.pack(self)
+                return msg
+            
+        def omnidirectional_flow_send(self, time_usec, sensor_id, left, right, quality, front_distance_m):
+                '''
+                Optical flow from an omnidirectional flow sensor (e.g. PX4FLOW with
+                wide angle lens)
+
+                time_usec                 : Timestamp (microseconds, synced to UNIX time or since system boot) (uint64_t)
+                sensor_id                 : Sensor ID (uint8_t)
+                left                      : Flow in deci pixels (1 = 0.1 pixel) on left hemisphere (int16_t)
+                right                     : Flow in deci pixels (1 = 0.1 pixel) on right hemisphere (int16_t)
+                quality                   : Optical flow quality / confidence. 0: bad, 255: maximum quality (uint8_t)
+                front_distance_m          : Front distance in meters. Positive value (including zero): distance known. Negative value: Unknown distance (float)
+
+                '''
+                return self.send(self.omnidirectional_flow_encode(time_usec, sensor_id, left, right, quality, front_distance_m))
+            
+        def file_transfer_start_encode(self, transfer_uid, dest_path, direction, file_size, flags):
+                '''
+                Begin file transfer
+
+                transfer_uid              : Unique transfer ID (uint64_t)
+                dest_path                 : Destination path (char)
+                direction                 : Transfer direction: 0: from requester, 1: to requester (uint8_t)
+                file_size                 : File size in bytes (uint32_t)
+                flags                     : RESERVED (uint8_t)
+
+                '''
+                msg = MAVLink_file_transfer_start_message(transfer_uid, dest_path, direction, file_size, flags)
+                msg.pack(self)
+                return msg
+            
+        def file_transfer_start_send(self, transfer_uid, dest_path, direction, file_size, flags):
+                '''
+                Begin file transfer
+
+                transfer_uid              : Unique transfer ID (uint64_t)
+                dest_path                 : Destination path (char)
+                direction                 : Transfer direction: 0: from requester, 1: to requester (uint8_t)
+                file_size                 : File size in bytes (uint32_t)
+                flags                     : RESERVED (uint8_t)
+
+                '''
+                return self.send(self.file_transfer_start_encode(transfer_uid, dest_path, direction, file_size, flags))
+            
+        def file_transfer_dir_list_encode(self, transfer_uid, dir_path, flags):
+                '''
+                Get directory listing
+
+                transfer_uid              : Unique transfer ID (uint64_t)
+                dir_path                  : Directory path to list (char)
+                flags                     : RESERVED (uint8_t)
+
+                '''
+                msg = MAVLink_file_transfer_dir_list_message(transfer_uid, dir_path, flags)
+                msg.pack(self)
+                return msg
+            
+        def file_transfer_dir_list_send(self, transfer_uid, dir_path, flags):
+                '''
+                Get directory listing
+
+                transfer_uid              : Unique transfer ID (uint64_t)
+                dir_path                  : Directory path to list (char)
+                flags                     : RESERVED (uint8_t)
+
+                '''
+                return self.send(self.file_transfer_dir_list_encode(transfer_uid, dir_path, flags))
+            
+        def file_transfer_res_encode(self, transfer_uid, result):
+                '''
+                File transfer result
+
+                transfer_uid              : Unique transfer ID (uint64_t)
+                result                    : 0: OK, 1: not permitted, 2: bad path / file name, 3: no space left on device (uint8_t)
+
+                '''
+                msg = MAVLink_file_transfer_res_message(transfer_uid, result)
+                msg.pack(self)
+                return msg
+            
+        def file_transfer_res_send(self, transfer_uid, result):
+                '''
+                File transfer result
+
+                transfer_uid              : Unique transfer ID (uint64_t)
+                result                    : 0: OK, 1: not permitted, 2: bad path / file name, 3: no space left on device (uint8_t)
+
+                '''
+                return self.send(self.file_transfer_res_encode(transfer_uid, result))
             
         def battery_status_encode(self, accu_id, voltage_cell_1, voltage_cell_2, voltage_cell_3, voltage_cell_4, voltage_cell_5, voltage_cell_6, current_battery, battery_remaining):
                 '''
