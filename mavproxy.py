@@ -988,9 +988,10 @@ def handle_usec_timestamp(m, master):
             mm.highest_usec = usec
         return
 
-    # we want to detect when a link has significant buffering, causing us to receive
-    # old packets. If we get packets that are more than 1 second old, then mark the link
-    # as being delayed. We will not act on packets from this link until it has caught up
+    # we want to detect when a link has significant buffering, causing us to
+    # receive old packets. If we get packets that are more than 1 second old,
+    # then mark the link as being delayed. We will not act on packets from this
+    # link until it has caught up
     master.highest_usec = usec
     if usec > mpstate.status.highest_usec:
         mpstate.status.highest_usec = usec
@@ -1012,7 +1013,6 @@ def report_altitude(altitude):
 
 def master_callback(m, master):
     '''process mavlink message m on master, sending any messages to recipients'''
-
     if getattr(m, '_timestamp', None) is None:
         master.post_message(m)
     mpstate.status.counters['MasterIn'][master.linknum] += 1
@@ -1025,6 +1025,8 @@ def master_callback(m, master):
 
     # and log them
     if mtype != 'BAD_DATA' and mpstate.logqueue:
+        # XXX
+        # print("type: %s" % mtype)
         # put link number in bottom 2 bits, so we can analyse packet
         # delay in saved logs
         usec = get_usec()
@@ -1053,6 +1055,7 @@ def master_callback(m, master):
         mpstate.status.last_heartbeat = time.time()
         master.last_heartbeat = mpstate.status.last_heartbeat
 
+    # XXX report messages dropped.
     elif mtype == "DATA16":
         print("Data packet:")
         arr = m.data16
@@ -1155,8 +1158,7 @@ def master_callback(m, master):
         if opts.quadcopter or ground_press is None:
             # we're on a ArduCopter which uses relative altitude in VFR_HUD
             report_altitude(m.alt)
-
-        # Print incoming VFR info and keep track of time.
+        # XXX Print incoming VFR info and keep track of time.
         global foo_now
         print("Got VFR: %f, heading: %f" % (time.time() - foo_now, m.heading))
         foo_now = time.time()
@@ -1230,7 +1232,7 @@ def master_callback(m, master):
                 report_altitude(altitude)
 
     elif mtype == "BAD_DATA":
-        print("B! ")
+        # print("Bad data! ")
         if mavutil.all_printable(m.data):
             mpstate.console.write(str(m.data), bg='red')
     elif mtype in [ 'HEARTBEAT', 'GLOBAL_POSITION', 'RC_CHANNELS_SCALED',
@@ -1400,7 +1402,7 @@ def set_stream_rates():
         #     rate = mpstate.settings.streamrate
         # else:
         #     rate = mpstate.settings.streamrate2
-        # Send a high rate for reading VFR_HUD messages
+        # XXX send a high rate for reading VFR_HUD messages
         rate = 1
         # print("Sending stream rate req: %f" % rate)
         master.mav.request_data_stream_send(mpstate.status.target_system, mpstate.status.target_component,
@@ -1701,8 +1703,7 @@ Auto-detected serial ports are:
     mpstate.settings.streamrate2 = opts.streamrate
 
     status_period = mavutil.periodic_event(1.0)
-    # Crank up the rate for sending stream rate data (specifically
-    # request_data_stream)
+    # XXX crank up the rate for sending stream rate data (specifically request_data_stream)
     msg_period = mavutil.periodic_event(1)
     heartbeat_period = mavutil.periodic_event(1)
     battery_period = mavutil.periodic_event(0.1)
