@@ -1563,25 +1563,25 @@
              <field type="uint8_t" name="quality">Optical flow quality / confidence. 0: bad, 255: maximum quality</field>
              <field type="float" name="front_distance_m">Front distance in meters. Positive value (including zero): distance known. Negative value: Unknown distance</field>
          </message>
-         <message id="110" name="FILE_TRANSFER_START">
-             <description>Begin file transfer</description>
-             <field type="uint64_t" name="transfer_uid">Unique transfer ID</field>
-             <field type="char[240]" name="dest_path">Destination path</field>
-             <field type="uint8_t" name="direction">Transfer direction: 0: from requester, 1: to requester</field>
-             <field type="uint32_t" name="file_size">File size in bytes</field>
-             <field type="uint8_t" name="flags">RESERVED</field>
-         </message>
-         <message id="111" name="FILE_TRANSFER_DIR_LIST">
-             <description>Get directory listing</description>
-             <field type="uint64_t" name="transfer_uid">Unique transfer ID</field>
-             <field type="char[240]" name="dir_path">Directory path to list</field>
-             <field type="uint8_t" name="flags">RESERVED</field>
-         </message>
-         <message id="112" name="FILE_TRANSFER_RES">
-             <description>File transfer result</description>
-             <field type="uint64_t" name="transfer_uid">Unique transfer ID</field>
-             <field type="uint8_t" name="result">0: OK, 1: not permitted, 2: bad path / file name, 3: no space left on device</field>
-         </message>
+         <!-- <message id="110" name="FILE_TRANSFER_START"> -->
+         <!--     <description>Begin file transfer</description> -->
+         <!--     <field type="uint64_t" name="transfer_uid">Unique transfer ID</field> -->
+         <!--     <field type="char[240]" name="dest_path">Destination path</field> -->
+         <!--     <field type="uint8_t" name="direction">Transfer direction: 0: from requester, 1: to requester</field> -->
+         <!--     <field type="uint32_t" name="file_size">File size in bytes</field> -->
+         <!--     <field type="uint8_t" name="flags">RESERVED</field> -->
+         <!-- </message> -->
+         <!-- <message id="111" name="FILE_TRANSFER_DIR_LIST"> -->
+         <!--     <description>Get directory listing</description> -->
+         <!--     <field type="uint64_t" name="transfer_uid">Unique transfer ID</field> -->
+         <!--     <field type="char[240]" name="dir_path">Directory path to list</field> -->
+         <!--     <field type="uint8_t" name="flags">RESERVED</field> -->
+         <!-- </message> -->
+         <!-- <message id="112" name="FILE_TRANSFER_RES"> -->
+         <!--     <description>File transfer result</description> -->
+         <!--     <field type="uint64_t" name="transfer_uid">Unique transfer ID</field> -->
+         <!--     <field type="uint8_t" name="result">0: OK, 1: not permitted, 2: bad path / file name, 3: no space left on device</field> -->
+         <!-- </message> -->
          <message id="147" name="BATTERY_STATUS">
                <description>Transmitte battery informations for a accu pack.</description>
                <field type="uint8_t" name="accu_id">Accupack ID</field>
