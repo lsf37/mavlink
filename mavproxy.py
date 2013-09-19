@@ -1056,7 +1056,7 @@ def master_callback(m, master):
         master.last_heartbeat = mpstate.status.last_heartbeat
 
     # XXX report messages dropped.
-    elif mtype == "DATA16":
+    elif mtype == "DATA16" and opts.smaccm_report_data:
         print("Data packet:")
         arr = m.data16
         dropped = 0
@@ -1158,10 +1158,11 @@ def master_callback(m, master):
         if opts.quadcopter or ground_press is None:
             # we're on a ArduCopter which uses relative altitude in VFR_HUD
             report_altitude(m.alt)
-        # XXX Print incoming VFR info and keep track of time.
-        global foo_now
-        print("Got VFR: %f, heading: %f" % (time.time() - foo_now, m.heading))
-        foo_now = time.time()
+        if opts.smaccm_report_data:
+            # XXX Print incoming VFR info and keep track of time.
+            global foo_now
+            print("Got VFR: %f, heading: %f" % (time.time() - foo_now, m.heading))
+            foo_now = time.time()
 
     elif mtype == "GPS_RAW":
         if mpstate.status.have_gps_lock:
@@ -1629,6 +1630,8 @@ if __name__ == '__main__':
         help='Load the specified module.  Can be used multiple times.')
     parser.add_option("--mav09", action='store_true', default=False, help="Use MAVLink protocol 0.9")
     parser.add_option("--nowait", action='store_true', default=False, help="don't wait for HEARTBEAT on startup")
+    parser.add_option("--smaccm-report-data", action='store_true',
+            default=False, help="smaccm specific data16 reporting")
     
     (opts, args) = parser.parse_args()
 
