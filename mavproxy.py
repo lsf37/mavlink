@@ -1470,6 +1470,22 @@ def periodic_tasks():
             send_rc_override()
             if mpstate.status.override_counter > 0:
                 mpstate.status.override_counter -= 1
+    # call optional module idle tasks. These are called at several hundred Hz
+    for m in mpstate.modules:
+        if hasattr(m, 'idle_task'):
+            try:
+                m.idle_task()
+            except Exception, msg:
+                if mpstate.settings.moddebug == 1:
+                    print(msg)
+                elif mpstate.settings.moddebug > 1:
+                    import traceback
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    traceback.print_exception(exc_type, exc_value, exc_traceback,
+                                              limit=2, file=sys.stdout)
+
+
+
 
 def main_loop():
     '''main processing loop'''
