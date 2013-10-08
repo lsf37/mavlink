@@ -347,6 +347,14 @@ def cmd_attack(args):
     '''cmd attack'''
     mpstate.master().set_attack()
 
+def cmd_stream_rate(args):
+    if len(args) == 1 and int(args[0]) >= 0 and int(args[0]) <= 100:
+        mpstate.settings.streamrate = int(args[0])
+        set_stream_rates()
+    else:
+        print("invalid stream rate setting, provide an integer argument "
+                + " between 0 and 100")
+
 def process_waypoint_request(m, master):
     '''process a waypoint request from the master'''
     if (not mpstate.status.loading_waypoints or
@@ -801,6 +809,7 @@ command_map = {
     'watch'   : (cmd_watch,    'watch a MAVLink pattern'),
     'module'  : (cmd_module,   'module commands'),
     'attack'  : (cmd_attack,   'flood data-link'),
+    'stream'  : (cmd_stream_rate, 'set stream rate'),
     }
 
 def process_stdin(line):
@@ -1399,12 +1408,10 @@ def set_stream_rates():
     mpstate.status.last_streamrate2 = mpstate.settings.streamrate2
 
     for master in mpstate.mav_master:
-        # if master.linknum == 0:
-        #     rate = mpstate.settings.streamrate
-        # else:
-        #     rate = mpstate.settings.streamrate2
-        # XXX send a high rate for reading VFR_HUD messages
-        rate = 1
+        if master.linknum == 0:
+            rate = mpstate.settings.streamrate
+        else:
+            rate = mpstate.settings.streamrate2
         # print("Sending stream rate req: %f" % rate)
         master.mav.request_data_stream_send(mpstate.status.target_system, mpstate.status.target_component,
                                             mavutil.mavlink.MAV_DATA_STREAM_ALL,
