@@ -96,6 +96,7 @@ parser.add_option("--home", dest="home",  type='string', default=None, help="hom
 parser.add_option("--rate", dest="rate", type='int', help="SIM update rate", default=400)
 parser.add_option("--wind", dest="wind", help="Simulate wind (speed,direction,turbulance)", default='0,0,0')
 parser.add_option("--frame", dest="frame", help="frame type (+,X,octo)", default='+')
+parser.add_option("-v", action="store_true", dest="verbose",  help="verbose output", default=False)
 
 (opts, args) = parser.parse_args()
 
@@ -176,11 +177,12 @@ while True:
     frame_count += 1
     t = time.time()
     if t - lastt > 1.0:
-#        print("%.2f fps sleepOverhead=%f zspeed=%.2f zaccel=%.2f h=%.1f a=%.1f yaw=%.1f" % (
-#            frame_count/(t-lastt),
-#            sleep_overhead,
-#            a.velocity.z, a.accelerometer.z, a.position.z, a.altitude,
-#            a.yaw))
+        if opts.verbose:
+            print("%.2f fps sleepOverhead=%f zspeed=%.2f zaccel=%.2f h=%.1f a=%.1f yaw=%.1f" % (
+                frame_count/(t-lastt),
+                sleep_overhead,
+                a.velocity.z, a.accelerometer.z, a.position.z, a.altitude,
+                a.yaw))
         lastt = t
         frame_count = 0
     frame_end = time.time()
