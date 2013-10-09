@@ -29,7 +29,7 @@ for d in [ 'pymavlink',
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), 'modules'))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), 'modules', 'lib'))
 
-import select, textconsole
+import select, textconsole, mavproxy_joystick
 
 class MPSettings(object):
     def __init__(self):
@@ -1465,19 +1465,21 @@ def periodic_tasks():
             mpstate.status.last_paramretry = time.time()
             mpstate.console.writeln("fetching parameters")
             master.param_fetch_all()
- 
+
     if battery_period.trigger():
         battery_report()
 
     if mpstate.override_period.trigger():
-        if (mpstate.status.override != [ 0 ] * 8 or 
-            mpstate.status.override != mpstate.status.last_override or
+        if (mpstate.status.override != [ 0 ] * 8 or
+            # Let's keep sending messages at a regular rate.
+            # mpstate.status.override != mpstate.status.last_override or
             mpstate.status.override_counter > 0):
             mpstate.status.last_override = mpstate.status.override[:]
             send_rc_override()
             if mpstate.status.override_counter > 0:
                 mpstate.status.override_counter -= 1
-    # call optional module idle tasks. These are called at several hundred Hz
+    # call optional module idle tasks. These are called at several hundred Hz.
+    # This includes the joystick
     for m in mpstate.modules:
         if hasattr(m, 'idle_task'):
             try:
