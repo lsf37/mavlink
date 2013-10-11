@@ -343,6 +343,27 @@ def cmd_manual(args):
     MAV_ACTION_SET_MANUAL = 12
     mpstate.master().mav.action_send(mpstate.status.target_system, mpstate.status.target_component, MAV_ACTION_SET_MANUAL)
 
+def cmd_mode(args):
+    '''set SMACCMPilot flight mode'''
+    if len(args) != 1:
+        print("Usage: mode MODE")
+        return
+    try:
+        mode = int(args[0])
+    except:
+        print("Invalid mode.")
+        return
+    # XXX should use the flag from the enum here
+    mpstate.master().mav.set_mode_send(mpstate.status.target_system, 1, mode)
+
+def cmd_arm(args):
+    '''arm motors'''
+    mpstate.master().arducopter_arm()
+
+def cmd_disarm(args):
+    '''disarm motors'''
+    mpstate.master().arducopter_disarm()
+
 def cmd_attack(args):
     '''cmd attack'''
     mpstate.master().set_attack()
@@ -810,6 +831,9 @@ command_map = {
     'module'  : (cmd_module,   'module commands'),
     'attack'  : (cmd_attack,   'flood data-link'),
     'stream'  : (cmd_stream_rate, 'set stream rate'),
+    'mode'    : (cmd_mode,     'set SMACCMPilot flight mode'),
+    'arm'     : (cmd_arm,      'arm motors'),
+    'disarm'  : (cmd_disarm,   'disarm motors')
     }
 
 def process_stdin(line):
