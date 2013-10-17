@@ -65,13 +65,12 @@ joymap = {
     'Logitech Logitech Cordless RumblePad 2':
     # Logitech Wireless F710 (recognized as a RumblePad 2 on Fedora by jstest).
     # Assumes D mode. 4 axes usable
-    [(0,  400, 1500),  # yaw
-     (1, -400, 1500),  # throttle
-     (2,  400, 1500),  # roll
-     (3, -400, 1500),  # pitch
+    [(2,  500, 1500),  # roll
+     (3, -500, 1500),  # pitch
+     (1, -500, 1500),  # throttle
+     (0,  500, 1500),  # yaw
      None,
      None]
-
 }
 
 def idle_task():
@@ -83,6 +82,11 @@ def idle_task():
         #the following is somewhat custom for the specific joystick model:
         override = mpstate.status.override[:]
         for i in range(len(state.map)):
+            # i == the channel we'll send the signal as to the AP.  We want
+            # 0: roll
+            # 1: pitch
+            # 2: throttle
+            # 3: yaw
             m = state.map[i]
             if m is None:
                 continue
@@ -91,8 +95,9 @@ def idle_task():
                 continue
             # -1 <= get_axis <= 1
             v = int(state.js.get_axis(axis)*mul + add)
-            v = max(min(v, 1900), 1100)
-            print("axis", axis, "val", v)
+            # Sanity-check(?)
+            v = max(min(v, 2000), 1000)
+            # print("axis", axis, "val", v)
             override[i] = v
         if override != mpstate.status.override:
             mpstate.status.override = override
