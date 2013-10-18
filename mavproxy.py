@@ -356,6 +356,13 @@ def cmd_mode(args):
     # XXX should use the flag from the enum here
     mpstate.master().mav.set_mode_send(mpstate.status.target_system, 1, mode)
 
+def cmd_joystick(args):
+    '''joystick load'''
+    if len(args) != 0:
+        print("usage: joystick")
+        return
+    else: cmd_module("load", "mavlink_joystick.py")
+
 def cmd_arm(args):
     '''arm motors'''
     mpstate.master().arducopter_arm()
@@ -805,35 +812,35 @@ def cmd_module(args):
     else:
         print(usage)
 
-
 command_map = {
-    'switch'  : (cmd_switch,   'set RC switch (1-5), 0 disables'),
-    'rc'      : (cmd_rc,       'override a RC channel value'),
-    'wp'      : (cmd_wp,       'waypoint management'),
-    'fence'   : (cmd_fence,    'geo-fence management'),
-    'param'   : (cmd_param,    'manage APM parameters'),
-    'setup'   : (cmd_setup,    'go into setup mode'),
-    'reset'   : (cmd_reset,    'reopen the connection to the MAVLink master'),
-    'status'  : (cmd_status,   'show status'),
-    'trim'    : (cmd_trim,     'trim aileron, elevator and rudder to current values'),
-    'auto'    : (cmd_auto,     'set AUTO mode'),
-    'ground'  : (cmd_ground,   'do a ground start'),
-    'level'   : (cmd_level,    'set level on a multicopter'),
-    'loiter'  : (cmd_loiter,   'set LOITER mode'),
-    'rtl'     : (cmd_rtl,      'set RTL mode'),
-    'manual'  : (cmd_manual,   'set MANUAL mode'),
-    'set'     : (cmd_set,      'mavproxy settings'),
-    'bat'     : (cmd_bat,      'show battery levels'),
-    'alt'     : (cmd_alt,      'show relative altitude'),
-    'link'    : (cmd_link,     'show link status'),
-    'up'      : (cmd_up,       'adjust TRIM_PITCH_CD up by 5 degrees'),
-    'watch'   : (cmd_watch,    'watch a MAVLink pattern'),
-    'module'  : (cmd_module,   'module commands'),
-    'attack'  : (cmd_attack,   'flood data-link'),
-    'stream'  : (cmd_stream_rate, 'set stream rate'),
-    'mode'    : (cmd_mode,     'set SMACCMPilot flight mode'),
-    'arm'     : (cmd_arm,      'arm motors'),
-    'disarm'  : (cmd_disarm,   'disarm motors')
+    'switch'   : (cmd_switch,   'set RC switch (1-5), 0 disables'),
+    'rc'       : (cmd_rc,       'override a RC channel value'),
+    'wp'       : (cmd_wp,       'waypoint management'),
+    'fence'    : (cmd_fence,    'geo-fence management'),
+    'param'    : (cmd_param,    'manage APM parameters'),
+    'setup'    : (cmd_setup,    'go into setup mode'),
+    'reset'    : (cmd_reset,    'reopen the connection to the MAVLink master'),
+    'status'   : (cmd_status,   'show status'),
+    'trim'     : (cmd_trim,     'trim aileron, elevator and rudder to current values'),
+    'auto'     : (cmd_auto,     'set AUTO mode'),
+    'ground'   : (cmd_ground,   'do a ground start'),
+    'level'    : (cmd_level,    'set level on a multicopter'),
+    'loiter'   : (cmd_loiter,   'set LOITER mode'),
+    'rtl'      : (cmd_rtl,      'set RTL mode'),
+    'manual'   : (cmd_manual,   'set MANUAL mode'),
+    'set'      : (cmd_set,      'mavproxy settings'),
+    'bat'      : (cmd_bat,      'show battery levels'),
+    'alt'      : (cmd_alt,      'show relative altitude'),
+    'link'     : (cmd_link,     'show link status'),
+    'up'       : (cmd_up,       'adjust TRIM_PITCH_CD up by 5 degrees'),
+    'watch'    : (cmd_watch,    'watch a MAVLink pattern'),
+    'module'   : (cmd_module,   'module commands'),
+    'attack'   : (cmd_attack,   'flood data-link'),
+    'stream'   : (cmd_stream_rate, 'set stream rate'),
+    'mode'     : (cmd_mode,     'set SMACCMPilot flight mode'),
+    'arm'      : (cmd_arm,      'arm motors'),
+    'disarm'   : (cmd_disarm,   'disarm motors'),
+    'joystick' : (cmd_joystick, 'load joystick')
     }
 
 def process_stdin(line):

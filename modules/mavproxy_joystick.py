@@ -32,7 +32,7 @@ joymap = {
      None,
      (2, 500, 1500),
      (5, 500, 1500)],
-    
+
     'Sony PLAYSTATION(R)3 Controller':
     # only 4 axes usable. This assumes mode 1
     [(2, 500,  1500),
@@ -124,7 +124,7 @@ def init(_mpstate):
     mpstate = _mpstate
     state = module_state()
     mpstate.joystick_state = state
-    
+
     #initialize joystick, if available
     pygame.init()
     pygame.joystick.init() # main joystick device system
@@ -145,7 +145,7 @@ def init(_mpstate):
                     state.map = joymap[jtype]
                     break
         except pygame.error:
-            continue    
+            continue
 
 if __name__ == "__main__":
     class dummy(object):
@@ -153,4 +153,3 @@ if __name__ == "__main__":
             pass
     d = dummy()
     init(d)
-    
