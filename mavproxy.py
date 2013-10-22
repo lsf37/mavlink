@@ -265,30 +265,6 @@ def send_rc_override():
                                                          mpstate.status.target_component,
                                                          *mpstate.status.override)
 
-def cmd_switch(args):
-    '''handle RC switch changes'''
-    mapping = [ 0, 1165, 1295, 1425, 1555, 1685, 1815 ]
-    if len(args) != 1:
-        print("Usage: switch <pwmvalue>")
-        return
-    value = int(args[0])
-    if value < 0 or value > 6:
-        print("Invalid switch value. Use 1-6 for flight modes, '0' to disable")
-        return
-    if opts.quadcopter:
-        default_channel = 5
-    else:
-        default_channel = 8
-    flite_mode_ch_parm = int(get_mav_param("FLTMODE_CH", default_channel))
-    mpstate.status.override[flite_mode_ch_parm-1] = mapping[value]
-    mpstate.status.override_counter = 10
-    send_rc_override()
-    if value == 0:
-        print("Disabled RC switch override")
-    else:
-        print("Set RC switch override to %u (PWM=%u channel=%u)" % (
-            value, mapping[value], flite_mode_ch_parm))
-
 def cmd_trim(args):
     '''trim aileron, elevator and rudder to current values'''
     if not 'RC_CHANNELS_RAW' in mpstate.status.msgs:
@@ -301,22 +277,6 @@ def cmd_trim(args):
     mpstate.master().param_set_send('YAW_TRIM',   m.chan4_raw)
     print("Trimmed to aileron=%u elevator=%u rudder=%u" % (
         m.chan1_raw, m.chan2_raw, m.chan4_raw))
-
-def cmd_rc(args):
-    '''handle RC value override'''
-    if len(args) != 2:
-        print("Usage: rc <channel> <pwmvalue>")
-        return
-    channel = int(args[0])
-    value   = int(args[1])
-    if value == -1:
-        value = 65535
-    if channel < 1 or channel > 8:
-        print("Channel must be between 1 and 8")
-        return
-    mpstate.status.override[channel-1] = value
-    mpstate.status.override_counter = 10
-    send_rc_override()
 
 def cmd_loiter(args):
     '''set LOITER mode'''
@@ -361,7 +321,7 @@ def cmd_joystick(args):
     if len(args) != 0:
         print("usage: joystick")
         return
-    else: cmd_module("load", "mavlink_joystick.py")
+    else: module_load("mavproxy_joystick")
 
 def cmd_arm(args):
     '''arm motors'''
@@ -778,21 +738,7 @@ def cmd_module(args):
         if len(args) < 2:
             print("usage: module load <name>")
             return
-        try:
-            directory = os.path.dirname(args[1])
-            modname   = os.path.basename(args[1])
-            if directory:
-                sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                                'modules', directory))
-            m = __import__(modname)
-            if m in mpstate.modules:
-                raise RuntimeError("module already loaded")
-            m.init(mpstate)
-            mpstate.modules.append(m)
-            print("Loaded module %s" % modname)
-        except Exception, msg:
-            print("Unable to load module %s: %s" % (modname, msg))
-            raise
+        module_load(args[1])
     elif args[0] == "reload":
         if len(args) < 2:
             print("usage: module reload <name>")
@@ -812,9 +758,25 @@ def cmd_module(args):
     else:
         print(usage)
 
+def module_load(mod):
+    '''module load'''
+    try:
+        directory = os.path.dirname(mod)
+        modname   = os.path.basename(mod)
+        if directory:
+            sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                            'modules', directory))
+        m = __import__(modname)
+        if m in mpstate.modules:
+            raise RuntimeError("module already loaded")
+        m.init(mpstate)
+        mpstate.modules.append(m)
+        print("Loaded module %s" % modname)
+    except Exception, msg:
+        print("Unable to load module %s: %s" % (modname, msg))
+        raise
+
 command_map = {
-    'switch'   : (cmd_switch,   'set RC switch (1-5), 0 disables'),
-    'rc'       : (cmd_rc,       'override a RC channel value'),
     'wp'       : (cmd_wp,       'waypoint management'),
     'fence'    : (cmd_fence,    'geo-fence management'),
     'param'    : (cmd_param,    'manage APM parameters'),
@@ -1500,9 +1462,11 @@ def periodic_tasks():
     if battery_period.trigger():
         battery_report()
 
-    if mpstate.override_period.trigger():
-        if (mpstate.status.override != [ 0 ] * 8 or
-            # Let's keep sending messages at a regular rate.
+    if mpstate.override_period.trigger(): # Period for override messages
+        if (# Empty override message
+            mpstate.status.override != [ 0 ] * 8 or
+            # Commented out: let's keep sending messages at a regular rate even
+            # if the message didn't change.
             # mpstate.status.override != mpstate.status.last_override or
             mpstate.status.override_counter > 0):
             mpstate.status.last_override = mpstate.status.override[:]
@@ -1769,7 +1733,7 @@ Auto-detected serial ports are:
     if mpstate.sitl_output:
         mpstate.override_period = mavutil.periodic_event(20)
     else:
-        mpstate.override_period = mavutil.periodic_event(1)
+        mpstate.override_period = mavutil.periodic_event(20)
     heartbeat_check_period = mavutil.periodic_event(0.33)
 
     mpstate.rl = rline("MAV> ")
