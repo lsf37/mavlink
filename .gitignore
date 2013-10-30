@@ -11,3 +11,6 @@ pymavlink/generator/C/include_v0.9/*/
 pymavlink/generator/C/include_v1.0/*/
 pymavlink/generator/message_definitions
 *.swp
+*.pyc
+mav.log
+mav.log.raw
