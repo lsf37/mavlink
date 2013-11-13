@@ -438,6 +438,7 @@ MAVLINK_MSG_ID_DATA16 = 169
 MAVLINK_MSG_ID_DATA32 = 170
 MAVLINK_MSG_ID_DATA64 = 171
 MAVLINK_MSG_ID_DATA96 = 172
+MAVLINK_MSG_ID_ALT_HOLD_DEBUG = 173
 MAVLINK_MSG_ID_HEARTBEAT = 0
 MAVLINK_MSG_ID_SYS_STATUS = 1
 MAVLINK_MSG_ID_SYSTEM_TIME = 2
@@ -594,6 +595,30 @@ class MAVLink_data96_message(MAVLink_message):
 
         def pack(self, mav):
                 return MAVLink_message.pack(self, mav, 185, struct.pack('<BB96s', self.type, self.len, self.data96))
+
+class MAVLink_alt_hold_debug_message(MAVLink_message):
+        '''
+        altitude hold controller state
+        '''
+        def __init__(self, throttle_cruise, throttle_avg, target_alt, rate_filter, accel_filter, speed_filter, desired_rate, alt_error, target_rate, current_rate, error_rate, target_accel, angle_boost):
+                MAVLink_message.__init__(self, MAVLINK_MSG_ID_ALT_HOLD_DEBUG, 'ALT_HOLD_DEBUG')
+                self._fieldnames = ['throttle_cruise', 'throttle_avg', 'target_alt', 'rate_filter', 'accel_filter', 'speed_filter', 'desired_rate', 'alt_error', 'target_rate', 'current_rate', 'error_rate', 'target_accel', 'angle_boost']
+                self.throttle_cruise = throttle_cruise
+                self.throttle_avg = throttle_avg
+                self.target_alt = target_alt
+                self.rate_filter = rate_filter
+                self.accel_filter = accel_filter
+                self.speed_filter = speed_filter
+                self.desired_rate = desired_rate
+                self.alt_error = alt_error
+                self.target_rate = target_rate
+                self.current_rate = current_rate
+                self.error_rate = error_rate
+                self.target_accel = target_accel
+                self.angle_boost = angle_boost
+
+        def pack(self, mav):
+                return MAVLink_message.pack(self, mav, 45, struct.pack('<fffffffffffff', self.throttle_cruise, self.throttle_avg, self.target_alt, self.rate_filter, self.accel_filter, self.speed_filter, self.desired_rate, self.alt_error, self.target_rate, self.current_rate, self.error_rate, self.target_accel, self.angle_boost))
 
 class MAVLink_heartbeat_message(MAVLink_message):
         '''
@@ -2171,6 +2196,7 @@ mavlink_map = {
         MAVLINK_MSG_ID_DATA32 : ( '<BB32s', MAVLink_data32_message, [0, 1, 2], 240 ),
         MAVLINK_MSG_ID_DATA64 : ( '<BB64s', MAVLink_data64_message, [0, 1, 2], 170 ),
         MAVLINK_MSG_ID_DATA96 : ( '<BB96s', MAVLink_data96_message, [0, 1, 2], 185 ),
+        MAVLINK_MSG_ID_ALT_HOLD_DEBUG : ( '<fffffffffffff', MAVLink_alt_hold_debug_message, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 45 ),
         MAVLINK_MSG_ID_HEARTBEAT : ( '<IBBBBB', MAVLink_heartbeat_message, [1, 2, 3, 0, 4, 5], 50 ),
         MAVLINK_MSG_ID_SYS_STATUS : ( '<IIIHHhHHHHHHb', MAVLink_sys_status_message, [0, 1, 2, 3, 4, 5, 12, 6, 7, 8, 9, 10, 11], 124 ),
         MAVLINK_MSG_ID_SYSTEM_TIME : ( '<QI', MAVLink_system_time_message, [0, 1], 137 ),
@@ -2569,6 +2595,50 @@ class MAVLink(object):
 
                 '''
                 return self.send(self.data96_encode(type, len, data96))
+            
+        def alt_hold_debug_encode(self, throttle_cruise, throttle_avg, target_alt, rate_filter, accel_filter, speed_filter, desired_rate, alt_error, target_rate, current_rate, error_rate, target_accel, angle_boost):
+                '''
+                altitude hold controller state
+
+                throttle_cruise           : cruise throttle (float)
+                throttle_avg              : average throttle (float)
+                target_alt                : target altitude (float)
+                rate_filter               : rate filter state (float)
+                accel_filter              : accel filter state (float)
+                speed_filter              : speed filter state (float)
+                desired_rate              : desired climb rate (float)
+                alt_error                 : altitude error (float)
+                target_rate               : target climb rate (float)
+                current_rate              : current climb rate (float)
+                error_rate                : climb rate error (float)
+                target_accel              : target acceleration (float)
+                angle_boost               : throttle angle boost (float)
+
+                '''
+                msg = MAVLink_alt_hold_debug_message(throttle_cruise, throttle_avg, target_alt, rate_filter, accel_filter, speed_filter, desired_rate, alt_error, target_rate, current_rate, error_rate, target_accel, angle_boost)
+                msg.pack(self)
+                return msg
+            
+        def alt_hold_debug_send(self, throttle_cruise, throttle_avg, target_alt, rate_filter, accel_filter, speed_filter, desired_rate, alt_error, target_rate, current_rate, error_rate, target_accel, angle_boost):
+                '''
+                altitude hold controller state
+
+                throttle_cruise           : cruise throttle (float)
+                throttle_avg              : average throttle (float)
+                target_alt                : target altitude (float)
+                rate_filter               : rate filter state (float)
+                accel_filter              : accel filter state (float)
+                speed_filter              : speed filter state (float)
+                desired_rate              : desired climb rate (float)
+                alt_error                 : altitude error (float)
+                target_rate               : target climb rate (float)
+                current_rate              : current climb rate (float)
+                error_rate                : climb rate error (float)
+                target_accel              : target acceleration (float)
+                angle_boost               : throttle angle boost (float)
+
+                '''
+                return self.send(self.alt_hold_debug_encode(throttle_cruise, throttle_avg, target_alt, rate_filter, accel_filter, speed_filter, desired_rate, alt_error, target_rate, current_rate, error_rate, target_accel, angle_boost))
             
         def heartbeat_encode(self, type, autopilot, base_mode, custom_mode, system_status, mavlink_version=3):
                 '''
