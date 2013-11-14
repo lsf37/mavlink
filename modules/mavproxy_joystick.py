@@ -4,6 +4,8 @@
 Contributed by AndrewF:
   http://diydrones.com/profile/AndrewF
 
+Modified by Lee Pike <leepike@galois.com> for SMACCMPilot
+
 '''
 
 import pygame, fnmatch
