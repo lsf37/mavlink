@@ -767,8 +767,9 @@ def module_load(mod):
             sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                             'modules', directory))
         m = __import__(modname)
-        if m in mpstate.modules:
-            raise RuntimeError("module already loaded")
+        # if m in mpstate.modules:
+        #     m.unload()
+            # raise RuntimeError("module already loaded")
         m.init(mpstate)
         mpstate.modules.append(m)
         print("Loaded module %s" % modname)
@@ -1463,16 +1464,19 @@ def periodic_tasks():
         battery_report()
 
     if mpstate.override_period.trigger(): # Period for override messages
-        if (# Empty override message
-            mpstate.status.override != [ 0 ] * 8 or
+        if (# An empty override message
+            mpstate.status.override != [ 0 ] * 8 and
+            # Deadman button on
+            mpstate.status.override[4] == 2000):
             # Commented out: let's keep sending messages at a regular rate even
             # if the message didn't change.
             # mpstate.status.override != mpstate.status.last_override or
-            mpstate.status.override_counter > 0):
-            mpstate.status.last_override = mpstate.status.override[:]
+            # mpstate.status.override_counter > 0):
+            # mpstate.status.last_override = mpstate.status.override[:]
             send_rc_override()
-            if mpstate.status.override_counter > 0:
-                mpstate.status.override_counter -= 1
+
+            # if mpstate.status.override_counter > 0:
+            #     mpstate.status.override_counter -= 1
     # call optional module idle tasks. These are called at several hundred Hz.
     # This includes the joystick
     for m in mpstate.modules:
@@ -1514,7 +1518,7 @@ def main_loop():
                     process_master(master)
 
         periodic_tasks()
-    
+
         rin = []
         for master in mpstate.mav_master:
             if master.fd is not None:
