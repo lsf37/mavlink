@@ -82,7 +82,11 @@ Mavelous.PFDView.prototype.onAttitudeChange = function() {
  */
 Mavelous.PFDView.prototype.onVfrHudChange = function() {
   var alt = this.vfrHud.get('alt');
-  this.pfd.setAltitude(alt);
+  if (alt === undefined) {
+  } else {
+    this.pfd.setAltitude(alt);
+    $('#pfd_altdisplay_hack').html(alt.toFixed(3).toString() + 'm');
+  }
   var airSpeed = this.vfrHud.get('airspeed');
   this.pfd.setSpeed(airSpeed);
   this.pfd.draw();
