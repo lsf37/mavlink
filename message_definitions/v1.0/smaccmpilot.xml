@@ -46,6 +46,7 @@
         <field type="float" name="error_rate">climb rate error</field>
         <field type="float" name="target_accel">target acceleration</field>
         <field type="float" name="angle_boost">throttle angle boost</field>
+        <field type="float" name="climb_rate">sensor climb rate</field>
       </message>
 	  <message name="VEHICLE_RADIO" id="174">
 	    <description>Status of radio system on vehicle</description>
