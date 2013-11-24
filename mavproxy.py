@@ -126,6 +126,7 @@ class MPStatus(object):
         self.avionics_battery_level = -1
         self.last_waypoint = 0
         self.exit = False
+        self.joystick_inputs = False # Has joystick input been provided recently?
         self.override = [ 0 ] * 8
         self.last_override = [ 0 ] * 8
         self.override_counter = 0
@@ -599,7 +600,7 @@ param_wildcard = "*"
 def cmd_param(args):
     '''control parameters'''
     if len(args) < 1:
-        print("usage: param <fetch|edit|set|show>")
+        print("usage: param <fetch|edit|set|show|load [paramfile]>")
         return
     if args[0] == "fetch":
         mpstate.master().param_fetch_all()
@@ -1464,19 +1465,19 @@ def periodic_tasks():
         battery_report()
 
     if mpstate.override_period.trigger(): # Period for override messages
-        if (# An empty override message
+        if (# Not an empty override message
             mpstate.status.override != [ 0 ] * 8 and
             # Deadman button on
             mpstate.status.override[4] == 2000):
-            # Commented out: let's keep sending messages at a regular rate even
-            # if the message didn't change.
-            # mpstate.status.override != mpstate.status.last_override or
-            # mpstate.status.override_counter > 0):
-            # mpstate.status.last_override = mpstate.status.override[:]
-            send_rc_override()
+           send_rc_override()
+         # Recently sent messages?  Then notify the deadman is off a few times
+        # so it gets through the radio.
+        elif mpstate.status.joystick_inputs:
+            mpstate.status.override = [ 0 ] * 8
+            for i in range(10):
+                send_rc_override()
+            mpstate.status.joystick_inputs = False
 
-            # if mpstate.status.override_counter > 0:
-            #     mpstate.status.override_counter -= 1
     # call optional module idle tasks. These are called at several hundred Hz.
     # This includes the joystick
     for m in mpstate.modules:

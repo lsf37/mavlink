@@ -115,6 +115,7 @@ def idle_task():
         b = state.js.get_button(button)
         if b:
             override[4] = 2000
+            mpstate.status.joystick_inputs = True
             # print("button: ", 2000) # On
         else:
             override[4] = 1000
