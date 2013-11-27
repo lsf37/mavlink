@@ -77,6 +77,16 @@ joymap = {
        (0,  500, 1500),  # yaw
        None,
        None]
+    , 4),
+
+    'Generic X-Box pad':
+    # Logitech Wireless F310, X mode. 4 axes usable
+    ( [(3,  500, 1500),  # roll
+       (4, -500, 1500),  # pitch
+       (1, -500, 1500),  # throttle
+       (0,  500, 1500),  # yaw
+       None,
+       None]
     , 4)
 }
 
