@@ -583,18 +583,25 @@ class MAVLink_alt_ctl_debug_message(MAVLink_message):
         '''
         altitude controller state
         '''
-        def __init__(self, alt_est, alt_rate_est, thrust_p, thrust_i, thrust_d, thrust_i_reset):
+        def __init__(self, alt_est, alt_rate_est, thrust_p, thrust_i, thrust_d, thrust_i_reset, ui_setp, ui_rate_setp, pos_p, pos_i, pos_d, pos_setp, pos_rate_setp):
                 MAVLink_message.__init__(self, MAVLINK_MSG_ID_ALT_CTL_DEBUG, 'ALT_CTL_DEBUG')
-                self._fieldnames = ['alt_est', 'alt_rate_est', 'thrust_p', 'thrust_i', 'thrust_d', 'thrust_i_reset']
+                self._fieldnames = ['alt_est', 'alt_rate_est', 'thrust_p', 'thrust_i', 'thrust_d', 'thrust_i_reset', 'ui_setp', 'ui_rate_setp', 'pos_p', 'pos_i', 'pos_d', 'pos_setp', 'pos_rate_setp']
                 self.alt_est = alt_est
                 self.alt_rate_est = alt_rate_est
                 self.thrust_p = thrust_p
                 self.thrust_i = thrust_i
                 self.thrust_d = thrust_d
                 self.thrust_i_reset = thrust_i_reset
+                self.ui_setp = ui_setp
+                self.ui_rate_setp = ui_rate_setp
+                self.pos_p = pos_p
+                self.pos_i = pos_i
+                self.pos_d = pos_d
+                self.pos_setp = pos_setp
+                self.pos_rate_setp = pos_rate_setp
 
         def pack(self, mav):
-                return MAVLink_message.pack(self, mav, 220, struct.pack('<ffffff', self.alt_est, self.alt_rate_est, self.thrust_p, self.thrust_i, self.thrust_d, self.thrust_i_reset))
+                return MAVLink_message.pack(self, mav, 130, struct.pack('<fffffffffffff', self.alt_est, self.alt_rate_est, self.thrust_p, self.thrust_i, self.thrust_d, self.thrust_i_reset, self.ui_setp, self.ui_rate_setp, self.pos_p, self.pos_i, self.pos_d, self.pos_setp, self.pos_rate_setp))
 
 class MAVLink_vehicle_radio_message(MAVLink_message):
         '''
@@ -2207,7 +2214,7 @@ mavlink_map = {
         MAVLINK_MSG_ID_DATA32 : ( '<BB32s', MAVLink_data32_message, [0, 1, 2], 240 ),
         MAVLINK_MSG_ID_DATA64 : ( '<BB64s', MAVLink_data64_message, [0, 1, 2], 170 ),
         MAVLINK_MSG_ID_DATA96 : ( '<BB96s', MAVLink_data96_message, [0, 1, 2], 185 ),
-        MAVLINK_MSG_ID_ALT_CTL_DEBUG : ( '<ffffff', MAVLink_alt_ctl_debug_message, [0, 1, 2, 3, 4, 5], 220 ),
+        MAVLINK_MSG_ID_ALT_CTL_DEBUG : ( '<fffffffffffff', MAVLink_alt_ctl_debug_message, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 130 ),
         MAVLINK_MSG_ID_VEHICLE_RADIO : ( '<HHBBBBB', MAVLink_vehicle_radio_message, [2, 3, 4, 5, 6, 0, 1], 238 ),
         MAVLINK_MSG_ID_GCS_RADIO : ( '<HHBBBBB', MAVLink_gcs_radio_message, [2, 3, 4, 5, 6, 0, 1], 108 ),
         MAVLINK_MSG_ID_HEARTBEAT : ( '<IBBBBB', MAVLink_heartbeat_message, [1, 2, 3, 0, 4, 5], 50 ),
@@ -2577,7 +2584,7 @@ class MAVLink(object):
                 '''
                 return self.send(self.data96_encode(type, len, data96))
             
-        def alt_ctl_debug_encode(self, alt_est, alt_rate_est, thrust_p, thrust_i, thrust_d, thrust_i_reset):
+        def alt_ctl_debug_encode(self, alt_est, alt_rate_est, thrust_p, thrust_i, thrust_d, thrust_i_reset, ui_setp, ui_rate_setp, pos_p, pos_i, pos_d, pos_setp, pos_rate_setp):
                 '''
                 altitude controller state
 
@@ -2587,13 +2594,20 @@ class MAVLink(object):
                 thrust_i                  :  (float)
                 thrust_d                  :  (float)
                 thrust_i_reset            :  (float)
+                ui_setp                   :  (float)
+                ui_rate_setp              :  (float)
+                pos_p                     :  (float)
+                pos_i                     :  (float)
+                pos_d                     :  (float)
+                pos_setp                  :  (float)
+                pos_rate_setp             :  (float)
 
                 '''
-                msg = MAVLink_alt_ctl_debug_message(alt_est, alt_rate_est, thrust_p, thrust_i, thrust_d, thrust_i_reset)
+                msg = MAVLink_alt_ctl_debug_message(alt_est, alt_rate_est, thrust_p, thrust_i, thrust_d, thrust_i_reset, ui_setp, ui_rate_setp, pos_p, pos_i, pos_d, pos_setp, pos_rate_setp)
                 msg.pack(self)
                 return msg
             
-        def alt_ctl_debug_send(self, alt_est, alt_rate_est, thrust_p, thrust_i, thrust_d, thrust_i_reset):
+        def alt_ctl_debug_send(self, alt_est, alt_rate_est, thrust_p, thrust_i, thrust_d, thrust_i_reset, ui_setp, ui_rate_setp, pos_p, pos_i, pos_d, pos_setp, pos_rate_setp):
                 '''
                 altitude controller state
 
@@ -2603,9 +2617,16 @@ class MAVLink(object):
                 thrust_i                  :  (float)
                 thrust_d                  :  (float)
                 thrust_i_reset            :  (float)
+                ui_setp                   :  (float)
+                ui_rate_setp              :  (float)
+                pos_p                     :  (float)
+                pos_i                     :  (float)
+                pos_d                     :  (float)
+                pos_setp                  :  (float)
+                pos_rate_setp             :  (float)
 
                 '''
-                return self.send(self.alt_ctl_debug_encode(alt_est, alt_rate_est, thrust_p, thrust_i, thrust_d, thrust_i_reset))
+                return self.send(self.alt_ctl_debug_encode(alt_est, alt_rate_est, thrust_p, thrust_i, thrust_d, thrust_i_reset, ui_setp, ui_rate_setp, pos_p, pos_i, pos_d, pos_setp, pos_rate_setp))
             
         def vehicle_radio_encode(self, rssi, remrssi, txbuf, noise, remnoise, rxerrors, fixed):
                 '''
