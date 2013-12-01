@@ -31,22 +31,14 @@
 	    <field type="uint8_t[96]" name="data96">raw data</field>
 	  </message>
 
-      <message name="ALT_HOLD_DEBUG" id="173">
-        <description>altitude hold controller state</description>
-        <field type="float" name="throttle_cruise">cruise throttle</field>
-        <field type="float" name="throttle_avg">average throttle</field>
-        <field type="float" name="target_alt">target altitude</field>
-        <field type="float" name="rate_filter">rate filter state</field>
-        <field type="float" name="accel_filter">accel filter state</field>
-        <field type="float" name="speed_filter">speed filter state</field>
-        <field type="float" name="desired_rate">desired climb rate</field>
-        <field type="float" name="alt_error">altitude error</field>
-        <field type="float" name="target_rate">target climb rate</field>
-        <field type="float" name="current_rate">current climb rate</field>
-        <field type="float" name="error_rate">climb rate error</field>
-        <field type="float" name="target_accel">target acceleration</field>
-        <field type="float" name="angle_boost">throttle angle boost</field>
-        <field type="float" name="climb_rate">sensor climb rate</field>
+      <message name="ALT_CTL_DEBUG" id="173">
+        <description>altitude controller state</description>
+        <field type="float" name="alt_est"></field>
+        <field type="float" name="alt_rate_est"></field>
+        <field type="float" name="thrust_p"></field>
+        <field type="float" name="thrust_i"></field>
+        <field type="float" name="thrust_d"></field>
+        <field type="float" name="thrust_i_reset"></field>
       </message>
 	  <message name="VEHICLE_RADIO" id="174">
 	    <description>Status of radio system on vehicle</description>
