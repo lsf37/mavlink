@@ -57,7 +57,7 @@
 	    <field type="uint16_t" name="rxerrors">receive errors</field>
 	    <field type="uint16_t" name="fixed">count of error corrected packets</field>
 	  </message>
-	
+
 	  <message name="GCS_RADIO" id="175">
 	    <description>Status of radio system on ground</description>
 	    <field type="uint8_t" name="rssi">local signal strength</field>
@@ -68,5 +68,15 @@
 	    <field type="uint16_t" name="rxerrors">receive errors</field>
 	    <field type="uint16_t" name="fixed">count of error corrected packets</field>
 	  </message>
-     </messages>
+
+    <message name="VEH_COMMSEC" id="185">
+      <description>Status of communication security packets received by autopilot</description>
+      <field type="uint32_t" name="time">milliseconds since last decrypted message></field>
+      <field type="uint8_t"  name="bad_len">wrong commsec length (1==bad; 0==good)</field>
+      <field type="uint8_t"  name="bad_decrypt">failed decryption (1==bad; 0==good)</field>
+      <field type="uint8_t"  name="bad_tag">failed authentication tag (1==bad; 0==good)</field>
+      <field type="uint32_t" name="state_cntr">stale counter ((counter val>0)==bad; 0==good)</field>
+    </message>
+  </messages>
+
 </mavlink>
