@@ -440,6 +440,7 @@ MAVLINK_MSG_ID_DATA96 = 172
 MAVLINK_MSG_ID_ALT_CTL_DEBUG = 173
 MAVLINK_MSG_ID_VEHICLE_RADIO = 174
 MAVLINK_MSG_ID_GCS_RADIO = 175
+MAVLINK_MSG_ID_VEH_COMMSEC = 185
 MAVLINK_MSG_ID_HEARTBEAT = 0
 MAVLINK_MSG_ID_SYS_STATUS = 1
 MAVLINK_MSG_ID_SYSTEM_TIME = 2
@@ -638,6 +639,22 @@ class MAVLink_gcs_radio_message(MAVLink_message):
 
         def pack(self, mav):
                 return MAVLink_message.pack(self, mav, 108, struct.pack('<HHBBBBB', self.rxerrors, self.fixed, self.rssi, self.remrssi, self.txbuf, self.noise, self.remnoise))
+
+class MAVLink_veh_commsec_message(MAVLink_message):
+        '''
+        Status of communication security packets received by autopilot
+        '''
+        def __init__(self, time, bad_len, bad_decrypt, bad_tag, state_cntr):
+                MAVLink_message.__init__(self, MAVLINK_MSG_ID_VEH_COMMSEC, 'VEH_COMMSEC')
+                self._fieldnames = ['time', 'bad_len', 'bad_decrypt', 'bad_tag', 'state_cntr']
+                self.time = time
+                self.bad_len = bad_len
+                self.bad_decrypt = bad_decrypt
+                self.bad_tag = bad_tag
+                self.state_cntr = state_cntr
+
+        def pack(self, mav):
+                return MAVLink_message.pack(self, mav, 202, struct.pack('<IIBBB', self.time, self.state_cntr, self.bad_len, self.bad_decrypt, self.bad_tag))
 
 class MAVLink_heartbeat_message(MAVLink_message):
         '''
@@ -2217,6 +2234,7 @@ mavlink_map = {
         MAVLINK_MSG_ID_ALT_CTL_DEBUG : ( '<fffffffffffff', MAVLink_alt_ctl_debug_message, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 130 ),
         MAVLINK_MSG_ID_VEHICLE_RADIO : ( '<HHBBBBB', MAVLink_vehicle_radio_message, [2, 3, 4, 5, 6, 0, 1], 238 ),
         MAVLINK_MSG_ID_GCS_RADIO : ( '<HHBBBBB', MAVLink_gcs_radio_message, [2, 3, 4, 5, 6, 0, 1], 108 ),
+        MAVLINK_MSG_ID_VEH_COMMSEC : ( '<IIBBB', MAVLink_veh_commsec_message, [0, 2, 3, 4, 1], 202 ),
         MAVLINK_MSG_ID_HEARTBEAT : ( '<IBBBBB', MAVLink_heartbeat_message, [1, 2, 3, 0, 4, 5], 50 ),
         MAVLINK_MSG_ID_SYS_STATUS : ( '<IIIHHhHHHHHHb', MAVLink_sys_status_message, [0, 1, 2, 3, 4, 5, 12, 6, 7, 8, 9, 10, 11], 124 ),
         MAVLINK_MSG_ID_SYSTEM_TIME : ( '<QI', MAVLink_system_time_message, [0, 1], 137 ),
@@ -2691,6 +2709,34 @@ class MAVLink(object):
 
                 '''
                 return self.send(self.gcs_radio_encode(rssi, remrssi, txbuf, noise, remnoise, rxerrors, fixed))
+            
+        def veh_commsec_encode(self, time, bad_len, bad_decrypt, bad_tag, state_cntr):
+                '''
+                Status of communication security packets received by autopilot
+
+                time                      : milliseconds since last decrypted message> (uint32_t)
+                bad_len                   : wrong commsec length (1==bad; 0==good) (uint8_t)
+                bad_decrypt               : failed decryption (1==bad; 0==good) (uint8_t)
+                bad_tag                   : failed authentication tag (1==bad; 0==good) (uint8_t)
+                state_cntr                : stale counter ((counter val>0)==bad; 0==good) (uint32_t)
+
+                '''
+                msg = MAVLink_veh_commsec_message(time, bad_len, bad_decrypt, bad_tag, state_cntr)
+                msg.pack(self)
+                return msg
+            
+        def veh_commsec_send(self, time, bad_len, bad_decrypt, bad_tag, state_cntr):
+                '''
+                Status of communication security packets received by autopilot
+
+                time                      : milliseconds since last decrypted message> (uint32_t)
+                bad_len                   : wrong commsec length (1==bad; 0==good) (uint8_t)
+                bad_decrypt               : failed decryption (1==bad; 0==good) (uint8_t)
+                bad_tag                   : failed authentication tag (1==bad; 0==good) (uint8_t)
+                state_cntr                : stale counter ((counter val>0)==bad; 0==good) (uint32_t)
+
+                '''
+                return self.send(self.veh_commsec_encode(time, bad_len, bad_decrypt, bad_tag, state_cntr))
             
         def heartbeat_encode(self, type, autopilot, base_mode, custom_mode, system_status, mavlink_version=3):
                 '''
