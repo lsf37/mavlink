@@ -14,3 +14,4 @@ pymavlink/generator/message_definitions
 *.pyc
 mav.log
 mav.log.raw
+pymavlink/mavlinkv10.py
