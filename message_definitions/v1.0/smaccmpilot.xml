@@ -72,10 +72,9 @@
     <message name="VEH_COMMSEC" id="185">
       <description>Status of communication security packets received by autopilot</description>
       <field type="uint32_t" name="time">milliseconds since last decrypted message></field>
-      <field type="uint8_t"  name="bad_len">wrong commsec length (1==bad; 0==good)</field>
-      <field type="uint8_t"  name="bad_decrypt">failed decryption (1==bad; 0==good)</field>
-      <field type="uint8_t"  name="bad_tag">failed authentication tag (1==bad; 0==good)</field>
-      <field type="uint32_t" name="state_cntr">stale counter ((counter val>0)==bad; 0==good)</field>
+      <field type="uint64_t" name="good_msgs">number of good messages received></field>
+      <field type="uint64_t" name="bad_msgs">number of bad messages received></field>
+      <field type="uint8_t"  name="commsec_err">commsec error (0 is success)</field>
     </message>
   </messages>
 
