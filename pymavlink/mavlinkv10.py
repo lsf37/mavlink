@@ -441,6 +441,7 @@ MAVLINK_MSG_ID_ALT_CTL_DEBUG = 173
 MAVLINK_MSG_ID_VEHICLE_RADIO = 174
 MAVLINK_MSG_ID_GCS_RADIO = 175
 MAVLINK_MSG_ID_VEH_COMMSEC = 185
+MAVLINK_MSG_ID_ATT_CTL_DEBUG = 186
 MAVLINK_MSG_ID_HEARTBEAT = 0
 MAVLINK_MSG_ID_SYS_STATUS = 1
 MAVLINK_MSG_ID_SYSTEM_TIME = 2
@@ -654,6 +655,19 @@ class MAVLink_veh_commsec_message(MAVLink_message):
 
         def pack(self, mav):
                 return MAVLink_message.pack(self, mav, 31, struct.pack('<QQIB', self.good_msgs, self.bad_msgs, self.time, self.commsec_err))
+
+class MAVLink_att_ctl_debug_message(MAVLink_message):
+        '''
+        attitude controller status
+        '''
+        def __init__(self, head_setpt, head_rate_setpoint):
+                MAVLink_message.__init__(self, MAVLINK_MSG_ID_ATT_CTL_DEBUG, 'ATT_CTL_DEBUG')
+                self._fieldnames = ['head_setpt', 'head_rate_setpoint']
+                self.head_setpt = head_setpt
+                self.head_rate_setpoint = head_rate_setpoint
+
+        def pack(self, mav):
+                return MAVLink_message.pack(self, mav, 193, struct.pack('<ff', self.head_setpt, self.head_rate_setpoint))
 
 class MAVLink_heartbeat_message(MAVLink_message):
         '''
@@ -2234,6 +2248,7 @@ mavlink_map = {
         MAVLINK_MSG_ID_VEHICLE_RADIO : ( '<HHBBBBB', MAVLink_vehicle_radio_message, [2, 3, 4, 5, 6, 0, 1], 238 ),
         MAVLINK_MSG_ID_GCS_RADIO : ( '<HHBBBBB', MAVLink_gcs_radio_message, [2, 3, 4, 5, 6, 0, 1], 108 ),
         MAVLINK_MSG_ID_VEH_COMMSEC : ( '<QQIB', MAVLink_veh_commsec_message, [2, 0, 1, 3], 31 ),
+        MAVLINK_MSG_ID_ATT_CTL_DEBUG : ( '<ff', MAVLink_att_ctl_debug_message, [0, 1], 193 ),
         MAVLINK_MSG_ID_HEARTBEAT : ( '<IBBBBB', MAVLink_heartbeat_message, [1, 2, 3, 0, 4, 5], 50 ),
         MAVLINK_MSG_ID_SYS_STATUS : ( '<IIIHHhHHHHHHb', MAVLink_sys_status_message, [0, 1, 2, 3, 4, 5, 12, 6, 7, 8, 9, 10, 11], 124 ),
         MAVLINK_MSG_ID_SYSTEM_TIME : ( '<QI', MAVLink_system_time_message, [0, 1], 137 ),
@@ -2734,6 +2749,28 @@ class MAVLink(object):
 
                 '''
                 return self.send(self.veh_commsec_encode(time, good_msgs, bad_msgs, commsec_err))
+            
+        def att_ctl_debug_encode(self, head_setpt, head_rate_setpoint):
+                '''
+                attitude controller status
+
+                head_setpt                : heading setpoint (float)
+                head_rate_setpoint        : heading rate setpoint (float)
+
+                '''
+                msg = MAVLink_att_ctl_debug_message(head_setpt, head_rate_setpoint)
+                msg.pack(self)
+                return msg
+            
+        def att_ctl_debug_send(self, head_setpt, head_rate_setpoint):
+                '''
+                attitude controller status
+
+                head_setpt                : heading setpoint (float)
+                head_rate_setpoint        : heading rate setpoint (float)
+
+                '''
+                return self.send(self.att_ctl_debug_encode(head_setpt, head_rate_setpoint))
             
         def heartbeat_encode(self, type, autopilot, base_mode, custom_mode, system_status, mavlink_version=3):
                 '''
