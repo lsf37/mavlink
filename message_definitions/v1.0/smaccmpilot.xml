@@ -72,8 +72,8 @@
     <message name="VEH_COMMSEC" id="185">
       <description>Status of communication security packets received by autopilot</description>
       <field type="uint32_t" name="time">milliseconds since last decrypted message></field>
-      <field type="uint64_t" name="good_msgs">number of good messages received></field>
-      <field type="uint64_t" name="bad_msgs">number of bad messages received></field>
+      <field type="uint32_t" name="good_msgs">number of good messages received></field>
+      <field type="uint32_t" name="bad_msgs">number of bad messages received></field>
       <field type="uint8_t"  name="commsec_err">commsec error (0 is success)</field>
     </message>
     <message name="ATT_CTL_DEBUG" id="186">
@@ -82,5 +82,4 @@
       <field type="float" name="head_rate_setpoint">heading rate setpoint</field>
     </message>
   </messages>
-
 </mavlink>

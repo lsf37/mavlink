@@ -654,7 +654,7 @@ class MAVLink_veh_commsec_message(MAVLink_message):
                 self.commsec_err = commsec_err
 
         def pack(self, mav):
-                return MAVLink_message.pack(self, mav, 31, struct.pack('<QQIB', self.good_msgs, self.bad_msgs, self.time, self.commsec_err))
+                return MAVLink_message.pack(self, mav, 112, struct.pack('<IIIB', self.time, self.good_msgs, self.bad_msgs, self.commsec_err))
 
 class MAVLink_att_ctl_debug_message(MAVLink_message):
         '''
@@ -2247,7 +2247,7 @@ mavlink_map = {
         MAVLINK_MSG_ID_ALT_CTL_DEBUG : ( '<fffffffffffff', MAVLink_alt_ctl_debug_message, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 130 ),
         MAVLINK_MSG_ID_VEHICLE_RADIO : ( '<HHBBBBB', MAVLink_vehicle_radio_message, [2, 3, 4, 5, 6, 0, 1], 238 ),
         MAVLINK_MSG_ID_GCS_RADIO : ( '<HHBBBBB', MAVLink_gcs_radio_message, [2, 3, 4, 5, 6, 0, 1], 108 ),
-        MAVLINK_MSG_ID_VEH_COMMSEC : ( '<QQIB', MAVLink_veh_commsec_message, [2, 0, 1, 3], 31 ),
+        MAVLINK_MSG_ID_VEH_COMMSEC : ( '<IIIB', MAVLink_veh_commsec_message, [0, 1, 2, 3], 112 ),
         MAVLINK_MSG_ID_ATT_CTL_DEBUG : ( '<ff', MAVLink_att_ctl_debug_message, [0, 1], 193 ),
         MAVLINK_MSG_ID_HEARTBEAT : ( '<IBBBBB', MAVLink_heartbeat_message, [1, 2, 3, 0, 4, 5], 50 ),
         MAVLINK_MSG_ID_SYS_STATUS : ( '<IIIHHhHHHHHHb', MAVLink_sys_status_message, [0, 1, 2, 3, 4, 5, 12, 6, 7, 8, 9, 10, 11], 124 ),
@@ -2729,8 +2729,8 @@ class MAVLink(object):
                 Status of communication security packets received by autopilot
 
                 time                      : milliseconds since last decrypted message> (uint32_t)
-                good_msgs                 : number of good messages received> (uint64_t)
-                bad_msgs                  : number of bad messages received> (uint64_t)
+                good_msgs                 : number of good messages received> (uint32_t)
+                bad_msgs                  : number of bad messages received> (uint32_t)
                 commsec_err               : commsec error (0 is success) (uint8_t)
 
                 '''
@@ -2743,8 +2743,8 @@ class MAVLink(object):
                 Status of communication security packets received by autopilot
 
                 time                      : milliseconds since last decrypted message> (uint32_t)
-                good_msgs                 : number of good messages received> (uint64_t)
-                bad_msgs                  : number of bad messages received> (uint64_t)
+                good_msgs                 : number of good messages received> (uint32_t)
+                bad_msgs                  : number of bad messages received> (uint32_t)
                 commsec_err               : commsec error (0 is success) (uint8_t)
 
                 '''
