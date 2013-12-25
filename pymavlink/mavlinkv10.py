@@ -660,14 +660,20 @@ class MAVLink_att_ctl_debug_message(MAVLink_message):
         '''
         attitude controller status
         '''
-        def __init__(self, head_setpt, head_rate_setpoint):
+        def __init__(self, head_setpt, head_rate_setpt, head_ctl_p, head_ctl_d, pitch_setpt, pitch_rate_setpt, roll_setpt, roll_rate_setpt):
                 MAVLink_message.__init__(self, MAVLINK_MSG_ID_ATT_CTL_DEBUG, 'ATT_CTL_DEBUG')
-                self._fieldnames = ['head_setpt', 'head_rate_setpoint']
+                self._fieldnames = ['head_setpt', 'head_rate_setpt', 'head_ctl_p', 'head_ctl_d', 'pitch_setpt', 'pitch_rate_setpt', 'roll_setpt', 'roll_rate_setpt']
                 self.head_setpt = head_setpt
-                self.head_rate_setpoint = head_rate_setpoint
+                self.head_rate_setpt = head_rate_setpt
+                self.head_ctl_p = head_ctl_p
+                self.head_ctl_d = head_ctl_d
+                self.pitch_setpt = pitch_setpt
+                self.pitch_rate_setpt = pitch_rate_setpt
+                self.roll_setpt = roll_setpt
+                self.roll_rate_setpt = roll_rate_setpt
 
         def pack(self, mav):
-                return MAVLink_message.pack(self, mav, 193, struct.pack('<ff', self.head_setpt, self.head_rate_setpoint))
+                return MAVLink_message.pack(self, mav, 187, struct.pack('<ffffffff', self.head_setpt, self.head_rate_setpt, self.head_ctl_p, self.head_ctl_d, self.pitch_setpt, self.pitch_rate_setpt, self.roll_setpt, self.roll_rate_setpt))
 
 class MAVLink_heartbeat_message(MAVLink_message):
         '''
@@ -2248,7 +2254,7 @@ mavlink_map = {
         MAVLINK_MSG_ID_VEHICLE_RADIO : ( '<HHBBBBB', MAVLink_vehicle_radio_message, [2, 3, 4, 5, 6, 0, 1], 238 ),
         MAVLINK_MSG_ID_GCS_RADIO : ( '<HHBBBBB', MAVLink_gcs_radio_message, [2, 3, 4, 5, 6, 0, 1], 108 ),
         MAVLINK_MSG_ID_VEH_COMMSEC : ( '<IIIB', MAVLink_veh_commsec_message, [0, 1, 2, 3], 112 ),
-        MAVLINK_MSG_ID_ATT_CTL_DEBUG : ( '<ff', MAVLink_att_ctl_debug_message, [0, 1], 193 ),
+        MAVLINK_MSG_ID_ATT_CTL_DEBUG : ( '<ffffffff', MAVLink_att_ctl_debug_message, [0, 1, 2, 3, 4, 5, 6, 7], 187 ),
         MAVLINK_MSG_ID_HEARTBEAT : ( '<IBBBBB', MAVLink_heartbeat_message, [1, 2, 3, 0, 4, 5], 50 ),
         MAVLINK_MSG_ID_SYS_STATUS : ( '<IIIHHhHHHHHHb', MAVLink_sys_status_message, [0, 1, 2, 3, 4, 5, 12, 6, 7, 8, 9, 10, 11], 124 ),
         MAVLINK_MSG_ID_SYSTEM_TIME : ( '<QI', MAVLink_system_time_message, [0, 1], 137 ),
@@ -2750,27 +2756,39 @@ class MAVLink(object):
                 '''
                 return self.send(self.veh_commsec_encode(time, good_msgs, bad_msgs, commsec_err))
             
-        def att_ctl_debug_encode(self, head_setpt, head_rate_setpoint):
+        def att_ctl_debug_encode(self, head_setpt, head_rate_setpt, head_ctl_p, head_ctl_d, pitch_setpt, pitch_rate_setpt, roll_setpt, roll_rate_setpt):
                 '''
                 attitude controller status
 
                 head_setpt                : heading setpoint (float)
-                head_rate_setpoint        : heading rate setpoint (float)
+                head_rate_setpt           : heading rate setpoint (float)
+                head_ctl_p                :  (float)
+                head_ctl_d                :  (float)
+                pitch_setpt               :  (float)
+                pitch_rate_setpt          :  (float)
+                roll_setpt                :  (float)
+                roll_rate_setpt           :  (float)
 
                 '''
-                msg = MAVLink_att_ctl_debug_message(head_setpt, head_rate_setpoint)
+                msg = MAVLink_att_ctl_debug_message(head_setpt, head_rate_setpt, head_ctl_p, head_ctl_d, pitch_setpt, pitch_rate_setpt, roll_setpt, roll_rate_setpt)
                 msg.pack(self)
                 return msg
             
-        def att_ctl_debug_send(self, head_setpt, head_rate_setpoint):
+        def att_ctl_debug_send(self, head_setpt, head_rate_setpt, head_ctl_p, head_ctl_d, pitch_setpt, pitch_rate_setpt, roll_setpt, roll_rate_setpt):
                 '''
                 attitude controller status
 
                 head_setpt                : heading setpoint (float)
-                head_rate_setpoint        : heading rate setpoint (float)
+                head_rate_setpt           : heading rate setpoint (float)
+                head_ctl_p                :  (float)
+                head_ctl_d                :  (float)
+                pitch_setpt               :  (float)
+                pitch_rate_setpt          :  (float)
+                roll_setpt                :  (float)
+                roll_rate_setpt           :  (float)
 
                 '''
-                return self.send(self.att_ctl_debug_encode(head_setpt, head_rate_setpoint))
+                return self.send(self.att_ctl_debug_encode(head_setpt, head_rate_setpt, head_ctl_p, head_ctl_d, pitch_setpt, pitch_rate_setpt, roll_setpt, roll_rate_setpt))
             
         def heartbeat_encode(self, type, autopilot, base_mode, custom_mode, system_status, mavlink_version=3):
                 '''
