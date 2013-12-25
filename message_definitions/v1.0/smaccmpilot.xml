@@ -79,7 +79,13 @@
     <message name="ATT_CTL_DEBUG" id="186">
       <description>attitude controller status</description>
       <field type="float" name="head_setpt">heading setpoint</field>
-      <field type="float" name="head_rate_setpoint">heading rate setpoint</field>
+      <field type="float" name="head_rate_setpt">heading rate setpoint</field>
+      <field type="float" name="head_ctl_p"></field>
+      <field type="float" name="head_ctl_d"></field>
+      <field type="float" name="pitch_setpt"></field>
+      <field type="float" name="pitch_rate_setpt"></field>
+      <field type="float" name="roll_setpt"></field>
+      <field type="float" name="roll_rate_setpt"></field>
     </message>
   </messages>
 </mavlink>
