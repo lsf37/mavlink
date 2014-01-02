@@ -442,6 +442,7 @@ MAVLINK_MSG_ID_VEHICLE_RADIO = 174
 MAVLINK_MSG_ID_GCS_RADIO = 175
 MAVLINK_MSG_ID_VEH_COMMSEC = 185
 MAVLINK_MSG_ID_ATT_CTL_DEBUG = 186
+MAVLINK_MSG_ID_POS_CTL_DEBUG = 187
 MAVLINK_MSG_ID_HEARTBEAT = 0
 MAVLINK_MSG_ID_SYS_STATUS = 1
 MAVLINK_MSG_ID_SYSTEM_TIME = 2
@@ -674,6 +675,30 @@ class MAVLink_att_ctl_debug_message(MAVLink_message):
 
         def pack(self, mav):
                 return MAVLink_message.pack(self, mav, 187, struct.pack('<ffffffff', self.head_setpt, self.head_rate_setpt, self.head_ctl_p, self.head_ctl_d, self.pitch_setpt, self.pitch_rate_setpt, self.roll_setpt, self.roll_rate_setpt))
+
+class MAVLink_pos_ctl_debug_message(MAVLink_message):
+        '''
+        position controller status
+        '''
+        def __init__(self, x_vel_setpt, y_vel_setpt, head_setpt, lat_setpt, lon_setpt, x_deviation, y_deviation, x_vel_p, x_vel_i, x_vel_d, y_vel_p, y_vel_i, y_vel_d):
+                MAVLink_message.__init__(self, MAVLINK_MSG_ID_POS_CTL_DEBUG, 'POS_CTL_DEBUG')
+                self._fieldnames = ['x_vel_setpt', 'y_vel_setpt', 'head_setpt', 'lat_setpt', 'lon_setpt', 'x_deviation', 'y_deviation', 'x_vel_p', 'x_vel_i', 'x_vel_d', 'y_vel_p', 'y_vel_i', 'y_vel_d']
+                self.x_vel_setpt = x_vel_setpt
+                self.y_vel_setpt = y_vel_setpt
+                self.head_setpt = head_setpt
+                self.lat_setpt = lat_setpt
+                self.lon_setpt = lon_setpt
+                self.x_deviation = x_deviation
+                self.y_deviation = y_deviation
+                self.x_vel_p = x_vel_p
+                self.x_vel_i = x_vel_i
+                self.x_vel_d = x_vel_d
+                self.y_vel_p = y_vel_p
+                self.y_vel_i = y_vel_i
+                self.y_vel_d = y_vel_d
+
+        def pack(self, mav):
+                return MAVLink_message.pack(self, mav, 16, struct.pack('<fffiiffffffff', self.x_vel_setpt, self.y_vel_setpt, self.head_setpt, self.lat_setpt, self.lon_setpt, self.x_deviation, self.y_deviation, self.x_vel_p, self.x_vel_i, self.x_vel_d, self.y_vel_p, self.y_vel_i, self.y_vel_d))
 
 class MAVLink_heartbeat_message(MAVLink_message):
         '''
@@ -2255,6 +2280,7 @@ mavlink_map = {
         MAVLINK_MSG_ID_GCS_RADIO : ( '<HHBBBBB', MAVLink_gcs_radio_message, [2, 3, 4, 5, 6, 0, 1], 108 ),
         MAVLINK_MSG_ID_VEH_COMMSEC : ( '<IIIB', MAVLink_veh_commsec_message, [0, 1, 2, 3], 112 ),
         MAVLINK_MSG_ID_ATT_CTL_DEBUG : ( '<ffffffff', MAVLink_att_ctl_debug_message, [0, 1, 2, 3, 4, 5, 6, 7], 187 ),
+        MAVLINK_MSG_ID_POS_CTL_DEBUG : ( '<fffiiffffffff', MAVLink_pos_ctl_debug_message, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 16 ),
         MAVLINK_MSG_ID_HEARTBEAT : ( '<IBBBBB', MAVLink_heartbeat_message, [1, 2, 3, 0, 4, 5], 50 ),
         MAVLINK_MSG_ID_SYS_STATUS : ( '<IIIHHhHHHHHHb', MAVLink_sys_status_message, [0, 1, 2, 3, 4, 5, 12, 6, 7, 8, 9, 10, 11], 124 ),
         MAVLINK_MSG_ID_SYSTEM_TIME : ( '<QI', MAVLink_system_time_message, [0, 1], 137 ),
@@ -2789,6 +2815,50 @@ class MAVLink(object):
 
                 '''
                 return self.send(self.att_ctl_debug_encode(head_setpt, head_rate_setpt, head_ctl_p, head_ctl_d, pitch_setpt, pitch_rate_setpt, roll_setpt, roll_rate_setpt))
+            
+        def pos_ctl_debug_encode(self, x_vel_setpt, y_vel_setpt, head_setpt, lat_setpt, lon_setpt, x_deviation, y_deviation, x_vel_p, x_vel_i, x_vel_d, y_vel_p, y_vel_i, y_vel_d):
+                '''
+                position controller status
+
+                x_vel_setpt               :  (float)
+                y_vel_setpt               :  (float)
+                head_setpt                :  (float)
+                lat_setpt                 :  (int32_t)
+                lon_setpt                 :  (int32_t)
+                x_deviation               :  (float)
+                y_deviation               :  (float)
+                x_vel_p                   :  (float)
+                x_vel_i                   :  (float)
+                x_vel_d                   :  (float)
+                y_vel_p                   :  (float)
+                y_vel_i                   :  (float)
+                y_vel_d                   :  (float)
+
+                '''
+                msg = MAVLink_pos_ctl_debug_message(x_vel_setpt, y_vel_setpt, head_setpt, lat_setpt, lon_setpt, x_deviation, y_deviation, x_vel_p, x_vel_i, x_vel_d, y_vel_p, y_vel_i, y_vel_d)
+                msg.pack(self)
+                return msg
+            
+        def pos_ctl_debug_send(self, x_vel_setpt, y_vel_setpt, head_setpt, lat_setpt, lon_setpt, x_deviation, y_deviation, x_vel_p, x_vel_i, x_vel_d, y_vel_p, y_vel_i, y_vel_d):
+                '''
+                position controller status
+
+                x_vel_setpt               :  (float)
+                y_vel_setpt               :  (float)
+                head_setpt                :  (float)
+                lat_setpt                 :  (int32_t)
+                lon_setpt                 :  (int32_t)
+                x_deviation               :  (float)
+                y_deviation               :  (float)
+                x_vel_p                   :  (float)
+                x_vel_i                   :  (float)
+                x_vel_d                   :  (float)
+                y_vel_p                   :  (float)
+                y_vel_i                   :  (float)
+                y_vel_d                   :  (float)
+
+                '''
+                return self.send(self.pos_ctl_debug_encode(x_vel_setpt, y_vel_setpt, head_setpt, lat_setpt, lon_setpt, x_deviation, y_deviation, x_vel_p, x_vel_i, x_vel_d, y_vel_p, y_vel_i, y_vel_d))
             
         def heartbeat_encode(self, type, autopilot, base_mode, custom_mode, system_status, mavlink_version=3):
                 '''
