@@ -87,5 +87,21 @@
       <field type="float" name="roll_setpt"></field>
       <field type="float" name="roll_rate_setpt"></field>
     </message>
+    <message name="POS_CTL_DEBUG" id="187">
+      <description>position controller status</description>
+      <field type="float" name="x_vel_setpt"></field>
+      <field type="float" name="y_vel_setpt"></field>
+      <field type="float" name="head_setpt"></field>
+      <field type="int32_t" name="lat_setpt"></field>
+      <field type="int32_t" name="lon_setpt"></field>
+      <field type="float" name="x_deviation"></field>
+      <field type="float" name="y_deviation"></field>
+      <field type="float" name="x_vel_p"></field>
+      <field type="float" name="x_vel_i"></field>
+      <field type="float" name="x_vel_d"></field>
+      <field type="float" name="y_vel_p"></field>
+      <field type="float" name="y_vel_i"></field>
+      <field type="float" name="y_vel_d"></field>
+    </message>
   </messages>
 </mavlink>
