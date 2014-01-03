@@ -96,9 +96,11 @@
       <field type="int32_t" name="lon_setpt"></field>
       <field type="float" name="x_deviation"></field>
       <field type="float" name="y_deviation"></field>
+      <field type="float" name="x_vel_est"></field>
       <field type="float" name="x_vel_p"></field>
       <field type="float" name="x_vel_i"></field>
       <field type="float" name="x_vel_d"></field>
+      <field type="float" name="y_vel_est"></field>
       <field type="float" name="y_vel_p"></field>
       <field type="float" name="y_vel_i"></field>
       <field type="float" name="y_vel_d"></field>
