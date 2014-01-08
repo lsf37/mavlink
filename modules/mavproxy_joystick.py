@@ -113,7 +113,12 @@ def idle_task():
             if axis >= state.num_axes:
                 continue
             # -1 <= get_axis <= 1
-            v = int(state.js.get_axis(axis)*mul + add)
+            if i == 2:
+                # Don't scale throttle as much
+                v = 0.5 * state.js.get_axis(axis)
+            else:
+                v = 0.25 * state.js.get_axis(axis)
+            v = int(v*mul + add)
             # Sanity-check(?)
             v = max(min(v, 2000), 1000)
             # print("axis", axis, "val", v)
