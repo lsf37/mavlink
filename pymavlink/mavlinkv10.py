@@ -443,6 +443,7 @@ MAVLINK_MSG_ID_GCS_RADIO = 175
 MAVLINK_MSG_ID_VEH_COMMSEC = 185
 MAVLINK_MSG_ID_ATT_CTL_DEBUG = 186
 MAVLINK_MSG_ID_POS_CTL_DEBUG = 187
+MAVLINK_MSG_ID_SMACCMPILOT_NAV_CMD = 188
 MAVLINK_MSG_ID_HEARTBEAT = 0
 MAVLINK_MSG_ID_SYS_STATUS = 1
 MAVLINK_MSG_ID_SYSTEM_TIME = 2
@@ -701,6 +702,30 @@ class MAVLink_pos_ctl_debug_message(MAVLink_message):
 
         def pack(self, mav):
                 return MAVLink_message.pack(self, mav, 23, struct.pack('<fffiiffffffffff', self.x_vel_setpt, self.y_vel_setpt, self.head_setpt, self.lat_setpt, self.lon_setpt, self.x_deviation, self.y_deviation, self.x_vel_est, self.x_vel_p, self.x_vel_i, self.x_vel_d, self.y_vel_est, self.y_vel_p, self.y_vel_i, self.y_vel_d))
+
+class MAVLink_smaccmpilot_nav_cmd_message(MAVLink_message):
+        '''
+
+        '''
+        def __init__(self, autoland_active, autoland_complete, alt_set, alt_rate_set, alt_set_valid, heading_set, heading_set_valid, lat_set, lon_set, lat_lon_set_valid, vel_x_set, vel_y_set, vel_set_valid):
+                MAVLink_message.__init__(self, MAVLINK_MSG_ID_SMACCMPILOT_NAV_CMD, 'SMACCMPILOT_NAV_CMD')
+                self._fieldnames = ['autoland_active', 'autoland_complete', 'alt_set', 'alt_rate_set', 'alt_set_valid', 'heading_set', 'heading_set_valid', 'lat_set', 'lon_set', 'lat_lon_set_valid', 'vel_x_set', 'vel_y_set', 'vel_set_valid']
+                self.autoland_active = autoland_active
+                self.autoland_complete = autoland_complete
+                self.alt_set = alt_set
+                self.alt_rate_set = alt_rate_set
+                self.alt_set_valid = alt_set_valid
+                self.heading_set = heading_set
+                self.heading_set_valid = heading_set_valid
+                self.lat_set = lat_set
+                self.lon_set = lon_set
+                self.lat_lon_set_valid = lat_lon_set_valid
+                self.vel_x_set = vel_x_set
+                self.vel_y_set = vel_y_set
+                self.vel_set_valid = vel_set_valid
+
+        def pack(self, mav):
+                return MAVLink_message.pack(self, mav, 180, struct.pack('<iiiiiiHBBBBBB', self.alt_set, self.alt_rate_set, self.lat_set, self.lon_set, self.vel_x_set, self.vel_y_set, self.heading_set, self.autoland_active, self.autoland_complete, self.alt_set_valid, self.heading_set_valid, self.lat_lon_set_valid, self.vel_set_valid))
 
 class MAVLink_heartbeat_message(MAVLink_message):
         '''
@@ -2283,6 +2308,7 @@ mavlink_map = {
         MAVLINK_MSG_ID_VEH_COMMSEC : ( '<IIIB', MAVLink_veh_commsec_message, [0, 1, 2, 3], 112 ),
         MAVLINK_MSG_ID_ATT_CTL_DEBUG : ( '<ffffffff', MAVLink_att_ctl_debug_message, [0, 1, 2, 3, 4, 5, 6, 7], 187 ),
         MAVLINK_MSG_ID_POS_CTL_DEBUG : ( '<fffiiffffffffff', MAVLink_pos_ctl_debug_message, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], 23 ),
+        MAVLINK_MSG_ID_SMACCMPILOT_NAV_CMD : ( '<iiiiiiHBBBBBB', MAVLink_smaccmpilot_nav_cmd_message, [7, 8, 0, 1, 9, 6, 10, 2, 3, 11, 4, 5, 12], 180 ),
         MAVLINK_MSG_ID_HEARTBEAT : ( '<IBBBBB', MAVLink_heartbeat_message, [1, 2, 3, 0, 4, 5], 50 ),
         MAVLINK_MSG_ID_SYS_STATUS : ( '<IIIHHhHHHHHHb', MAVLink_sys_status_message, [0, 1, 2, 3, 4, 5, 12, 6, 7, 8, 9, 10, 11], 124 ),
         MAVLINK_MSG_ID_SYSTEM_TIME : ( '<QI', MAVLink_system_time_message, [0, 1], 137 ),
@@ -2865,6 +2891,50 @@ class MAVLink(object):
 
                 '''
                 return self.send(self.pos_ctl_debug_encode(x_vel_setpt, y_vel_setpt, head_setpt, lat_setpt, lon_setpt, x_deviation, y_deviation, x_vel_est, x_vel_p, x_vel_i, x_vel_d, y_vel_est, y_vel_p, y_vel_i, y_vel_d))
+            
+        def smaccmpilot_nav_cmd_encode(self, autoland_active, autoland_complete, alt_set, alt_rate_set, alt_set_valid, heading_set, heading_set_valid, lat_set, lon_set, lat_lon_set_valid, vel_x_set, vel_y_set, vel_set_valid):
+                '''
+                
+
+                autoland_active           : nonzero value indicates vehicle should enter autoland mode (uint8_t)
+                autoland_complete         : nonzero value indicates vehicle may exit autoland mode (uint8_t)
+                alt_set                   : Setpoint for relative altititude, units in mm (int32_t)
+                alt_rate_set              : Maximum rate at which to change altitude, units in mm/sec (int32_t)
+                alt_set_valid             : nonzero value indicates alt_set and alt_rate_set fields are valid (uint8_t)
+                heading_set               : Setpoint for heading, units in degrees * 100 (uint16_t)
+                heading_set_valid         : nonzero value indicates heading_set field is valid (uint8_t)
+                lat_set                   : Setpoint for latitude, units in 1E7 degrees (int32_t)
+                lon_set                   : Setpoint for longitude, units in 1E7 degrees (int32_t)
+                lat_lon_set_valid         : nonzero value indicates lat_set and lon_set fields are valid (uint8_t)
+                vel_x_set                 : Setpoint for body frame X velocity, mm/s (int32_t)
+                vel_y_set                 : Setpoint for body frame Y velocity, mm/s (int32_t)
+                vel_set_valid             : nonzero value indicates vel_x_set and vel_y_set fields are valid. (uint8_t)
+
+                '''
+                msg = MAVLink_smaccmpilot_nav_cmd_message(autoland_active, autoland_complete, alt_set, alt_rate_set, alt_set_valid, heading_set, heading_set_valid, lat_set, lon_set, lat_lon_set_valid, vel_x_set, vel_y_set, vel_set_valid)
+                msg.pack(self)
+                return msg
+            
+        def smaccmpilot_nav_cmd_send(self, autoland_active, autoland_complete, alt_set, alt_rate_set, alt_set_valid, heading_set, heading_set_valid, lat_set, lon_set, lat_lon_set_valid, vel_x_set, vel_y_set, vel_set_valid):
+                '''
+                
+
+                autoland_active           : nonzero value indicates vehicle should enter autoland mode (uint8_t)
+                autoland_complete         : nonzero value indicates vehicle may exit autoland mode (uint8_t)
+                alt_set                   : Setpoint for relative altititude, units in mm (int32_t)
+                alt_rate_set              : Maximum rate at which to change altitude, units in mm/sec (int32_t)
+                alt_set_valid             : nonzero value indicates alt_set and alt_rate_set fields are valid (uint8_t)
+                heading_set               : Setpoint for heading, units in degrees * 100 (uint16_t)
+                heading_set_valid         : nonzero value indicates heading_set field is valid (uint8_t)
+                lat_set                   : Setpoint for latitude, units in 1E7 degrees (int32_t)
+                lon_set                   : Setpoint for longitude, units in 1E7 degrees (int32_t)
+                lat_lon_set_valid         : nonzero value indicates lat_set and lon_set fields are valid (uint8_t)
+                vel_x_set                 : Setpoint for body frame X velocity, mm/s (int32_t)
+                vel_y_set                 : Setpoint for body frame Y velocity, mm/s (int32_t)
+                vel_set_valid             : nonzero value indicates vel_x_set and vel_y_set fields are valid. (uint8_t)
+
+                '''
+                return self.send(self.smaccmpilot_nav_cmd_encode(autoland_active, autoland_complete, alt_set, alt_rate_set, alt_set_valid, heading_set, heading_set_valid, lat_set, lon_set, lat_lon_set_valid, vel_x_set, vel_y_set, vel_set_valid))
             
         def heartbeat_encode(self, type, autopilot, base_mode, custom_mode, system_status, mavlink_version=3):
                 '''
