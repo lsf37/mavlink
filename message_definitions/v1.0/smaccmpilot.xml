@@ -105,5 +105,42 @@
       <field type="float" name="y_vel_i"></field>
       <field type="float" name="y_vel_d"></field>
     </message>
+    <message name="SMACCMPILOT_NAV_CMD" id ="188">
+      <field type="uint8_t" name="autoland_active">
+        nonzero value indicates vehicle should enter autoland mode</field>
+      <field type="uint8_t" name="autoland_complete">
+        nonzero value indicates vehicle may exit autoland mode</field>
+
+      <field type="int32_t" name="alt_set">
+        Setpoint for relative altititude, units in mm</field>
+      <field type="int32_t" name="alt_rate_set">
+        Maximum rate at which to change altitude, units in mm/sec</field>
+      <field type="uint8_t" name="alt_set_valid">
+        nonzero value indicates alt_set and alt_rate_set fields are valid
+         </field>
+
+      <field type="uint16_t" name="heading_set">
+        Setpoint for heading, units in degrees * 100</field>
+      <field type="uint8_t" name="heading_set_valid">
+        nonzero value indicates heading_set field is valid</field>
+
+      <field type="int32_t" name="lat_set">
+        Setpoint for latitude, units in 1E7 degrees</field>
+      <field type="int32_t" name="lon_set">
+        Setpoint for longitude, units in 1E7 degrees</field>
+      <field type="uint8_t" name="lat_lon_set_valid">
+        nonzero value indicates lat_set and lon_set fields are valid</field>
+
+      <field type="int32_t" name="vel_x_set">
+        Setpoint for body frame X velocity, mm/s</field>
+      <field type="int32_t" name="vel_y_set">
+        Setpoint for body frame Y velocity, mm/s</field>
+      <field type="uint8_t" name="vel_set_valid">
+        nonzero value indicates vel_x_set and vel_y_set fields are valid.
+        </field>
+
+    </message>
+
+
   </messages>
 </mavlink>
