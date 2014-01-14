@@ -126,7 +126,8 @@ def idle_task():
 
         # Deadman Button
         if button is None:
-            mpstate.console.error("Button is not valid: must specify a deadman switch.")
+            mpstate.console.error("Joystick description is not valid:"
+                                 + " must specify a deadman switch.")
         b = state.js.get_button(button)
         if b:
             override[4] = 2000
