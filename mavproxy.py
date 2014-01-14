@@ -147,6 +147,7 @@ class MPStatus(object):
         self.last_streamrate2 = -1
         self.last_paramretry = 0
         self.last_seq = 0
+        self.heading = 0
 
     def show(self, f, pattern=None):
         '''write status to status.txt'''
@@ -343,6 +344,33 @@ def cmd_stream_rate(args):
     else:
         print("invalid stream rate setting, provide an integer argument "
                 + " between 0 and 100")
+
+def cmd_left(args):
+    if len(args) == 0:
+        smaccm_nav_rotate(-90)
+    elif len(args) == 1:
+        try:
+            i = int(args[0])
+        except:
+            print("invalid argument, must be integer number in degrees")
+        smaccm_nav_rotate(-1*i)
+    else:
+        print("invalid arguments, expects one integer arg")
+
+def cmd_right(args):
+    if len(args) == 0:
+        smaccm_nav_rotate(90)
+    elif len(args) == 1:
+        try:
+            i = int(args[0])
+        except:
+            print("invalid argument, must be integer number in degrees")
+        smaccm_nav_rotate(i)
+    else:
+        print("invalid arguments, expects one integer arg")
+
+def cmd_noheading(args):
+    smaccm_nav_reset();
 
 def process_waypoint_request(m, master):
     '''process a waypoint request from the master'''
@@ -804,7 +832,10 @@ command_map = {
     'mode'     : (cmd_mode,     'set SMACCMPilot flight mode'),
     'arm'      : (cmd_arm,      'arm motors'),
     'disarm'   : (cmd_disarm,   'disarm motors'),
-    'joystick' : (cmd_joystick, 'load joystick')
+    'joystick' : (cmd_joystick, 'load joystick'),
+    'left'     : (cmd_left,     'rotate vehicle left'),
+    'right'    : (cmd_right,    'rotate vehicle right'),
+    'noheading': (cmd_noheading, 'cancel vehicle rotation commands')
     }
 
 def process_stdin(line):
@@ -1606,7 +1637,54 @@ LOGGING_LEVELS = {
 def get_logging_level_by_name(name):
   return LOGGING_LEVELS[name]
 
+def zero2pidomain(angle):
+    twopi = 2*math.pi
+    wrapped = math.fmod(math.fabs(angle),twopi)
+    if angle > 0:
+        return wrapped
+    else:
+        return twopi - wrapped
 
+
+def smaccm_nav_rotate(offset):
+    if 'VFR_HUD' not in mpstate.status.msgs:
+        return
+    current_heading = mpstate.status.msgs['VFR_HUD'].heading
+    newhead_sum  = math.radians(current_heading) + math.radians(offset)
+    newhead_wrapped = math.degrees(zero2pidomain(newhead_sum))
+    newhead = int(newhead_wrapped * 100)
+    mpstate.console.writeln("current heading %f, rotating by %f degrees to %f (centidegrees %d)"
+        %(current_heading, offset, newhead_wrapped, newhead))
+    mpstate.master().mav.smaccmpilot_nav_cmd_send(
+            0,     # autoland_active
+            0,     # autoland_complete
+            0,     # alt_set
+            0,     # alt_rate_set
+            0,     # alt_set_valid
+            newhead, # heading_set
+            1,     # heading_set_valid
+            0,     # lat_set
+            0,     # lon_set
+            0,     # lat_lon_set_valid
+            0,     # vel_x_set
+            0,     # vel_y_set
+            0)     # vel_set_valid
+
+def smaccm_nav_reset():
+    mpstate.master().mav.smaccmpilot_nav_cmd_send(
+            -1,     # autoland_active
+            -1,     # autoland_complete
+            0,     # alt_set
+            0,     # alt_rate_set
+            -1,     # alt_set_valid
+            0,     # heading_set
+            -1,     # heading_set_valid
+            0,     # lat_set
+            0,     # lon_set
+            -1,     # lat_lon_set_valid
+            0,     # vel_x_set
+            0,     # vel_y_set
+            -1)     # vel_set_valid
 
 if __name__ == '__main__':
 
