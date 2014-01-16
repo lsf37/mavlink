@@ -220,14 +220,6 @@ Mavelous.App.prototype.start = function() {
 
   Backbone.history.start();
 
-  if ($(window).width() > 767) {
-    /* On the desktop, default to overview */
-    this.router.navigate('overview', {'trigger': true});
-  } else {
-    /* On tablets and phones, default to map only */
-    this.router.navigate('maponly', {'trigger': true});
-  }
-
   // By trying to update at the maximum frame rate, but using a
   // throttle to clamp it to a max 10 Hz update rate, we end up
   // requesting new vehicle data and rendering it at a 10 Hz rate, or
