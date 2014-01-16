@@ -369,7 +369,31 @@ def cmd_right(args):
     else:
         print("invalid arguments, expects one integer arg")
 
-def cmd_noheading(args):
+def cmd_up(args):
+    if len(args) == 0:
+        smaccm_nav_altitude(1)
+    elif len(args) == 1:
+        try:
+            i = float(args[0])
+        except:
+            print("invalid argument, must be a float in degrees")
+        smaccm_nav_altitude(i)
+    else:
+        print("invalid arguments, expects one integer arg")
+
+def cmd_down(args):
+    if len(args) == 0:
+        smaccm_nav_altitude(-1)
+    elif len(args) == 1:
+        try:
+            i = float(args[0])
+        except:
+            print("invalid argument, must be a float in degrees")
+        smaccm_nav_altitude(-1*i)
+    else:
+        print("invalid arguments, expects one integer arg")
+
+def cmd_nonav(args):
     smaccm_nav_reset();
 
 def process_waypoint_request(m, master):
@@ -705,7 +729,7 @@ def cmd_alt(args):
     print("Altitude:  %.1f" % mpstate.status.altitude)
 
 
-def cmd_up(args):
+def cmd_up_deprecated_lol(args):
     '''adjust TRIM_PITCH_CD up by 5 degrees'''
     if len(args) == 0:
         adjust = 5.0
@@ -824,7 +848,6 @@ command_map = {
     'bat'      : (cmd_bat,      'show battery levels'),
     'alt'      : (cmd_alt,      'show relative altitude'),
     'link'     : (cmd_link,     'show link status'),
-    'up'       : (cmd_up,       'adjust TRIM_PITCH_CD up by 5 degrees'),
     'watch'    : (cmd_watch,    'watch a MAVLink pattern'),
     'module'   : (cmd_module,   'module commands'),
     'attack'   : (cmd_attack,   'flood data-link'),
@@ -835,7 +858,9 @@ command_map = {
     'joystick' : (cmd_joystick, 'load joystick'),
     'left'     : (cmd_left,     'rotate vehicle left'),
     'right'    : (cmd_right,    'rotate vehicle right'),
-    'noheading': (cmd_noheading, 'cancel vehicle rotation commands')
+    'up'       : (cmd_up,       'change alt upwards'),
+    'down'     : (cmd_down,     'change alt downwards'),
+    'nonav'    : (cmd_nonav,    'cancel vehicle alt and roatate commands')
     }
 
 def process_stdin(line):
@@ -1646,7 +1671,7 @@ def zero2pidomain(angle):
         return twopi - wrapped
 
 
-def smaccm_nav_rotate(offset):
+def smaccm_nav_heading(offset):
     if 'VFR_HUD' not in mpstate.status.msgs:
         return
     current_heading = mpstate.status.msgs['VFR_HUD'].heading
@@ -1663,6 +1688,26 @@ def smaccm_nav_rotate(offset):
             0,     # alt_set_valid
             newhead, # heading_set
             1,     # heading_set_valid
+            0,     # lat_set
+            0,     # lon_set
+            0,     # lat_lon_set_valid
+            0,     # vel_x_set
+            0,     # vel_y_set
+            0)     # vel_set_valid
+
+def smaccm_nav_altitude(offset):
+    if 'VFR_HUD' not in mpstate.status.msgs:
+        return
+    current_alt = mpstate.status.msgs['VFR_HUD'].alt # float in m
+    newalt_mm = int((current_alt + offset) * 1000)
+    mpstate.master().mav.smaccmpilot_nav_cmd_send(
+            0,     # autoland_active
+            0,     # autoland_complete
+            newalt_mm,# alt_set
+            1000,  # alt_rate_set
+            1,     # alt_set_valid
+            0,     # heading_set
+            0,     # heading_set_valid
             0,     # lat_set
             0,     # lon_set
             0,     # lat_lon_set_valid
