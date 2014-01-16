@@ -96,6 +96,14 @@ Mavelous.util.heartbeat.mavtype = function(msg) {
 };
 
 
+Mavelous.util.heartbeat.mode_display = function(msg) {
+  if (msg.get('autopilot') == 13) {
+    return Mavelous.util.smaccmpilot.mode_display(msg);
+  } else {
+    return Mavelous.util.heartbeat.modestring(msg);
+  }
+};
+
 /**
  * Returns the name of the vehicle flight mode.
  * @param {Mavelous.MavlinkMessage} msg A heartbeat message.
@@ -108,6 +116,10 @@ Mavelous.util.heartbeat.modestring = function(msg) {
 
   if (base_mode === null || type === null || custom_mode === null) {
     return 'badmode';
+  }
+
+  if (msg.get('autopilot') == 13) {
+    return Mavelous.util.smaccmpilot.modestring(msg);
   }
 
   if (!base_mode & Mavelous.util.MavModeFlag.CUSTOM_MODE_ENABLED) {
@@ -141,3 +153,46 @@ Mavelous.util.heartbeat.armed = function(msg) {
   }
   return false;
 };
+
+
+Mavelous.util.smaccmpilot = {};
+Mavelous.util.smaccmpilot.mode_display = function(msg) {
+  var custom_mode = msg.get('custom_mode');
+  var mode_dict = Mavelous.util.smaccmpilot.custom_mode(custom_mode);
+  return (
+    'Motors: ' + mode_dict['armed_mode'] + '<br />' +
+    'UI: '  + mode_dict['ui_source'] + '<br />' +
+    'Thr: ' + mode_dict['thr_mode']  + ' ' + mode_dict['autothr_src'] + '<br />' +
+    'Stab: '  + mode_dict['stab_src'] + '<br />' +
+    'Yaw: ' + mode_dict['head_src'] + ' ' + mode_dict['yaw_mode']
+    )
+
+  return JSON.stringify(mode_dict);
+};
+
+Mavelous.util.smaccmpilot.modestring = function(msg) {
+  var custom_mode = msg.get('custom_mode');
+  var mode_dict = Mavelous.util.smaccmpilot.custom_mode(custom_mode);
+  return "smaccmpilot custom mode";
+};
+
+Mavelous.util.smaccmpilot.custom_mode = function (custom_mode) {
+  var armed_field =     (custom_mode & 0x03) >> 0;
+  var ui_source_field = (custom_mode & 0x04) >> 2;
+  var thr_mode_field = (custom_mode & 0x08) >> 3;
+  var athr_src_field = (custom_mode & 0x10) >> 4;
+  var stab_src_field = (custom_mode & 0x20) >> 5;
+  var head_src_field = (custom_mode & 0x40) >> 6;
+  var yaw_mode_field = (custom_mode & 0x80) >> 7;
+
+  return { 'armed_mode': (armed_field == 0 ? 'safe':
+                          (armed_field == 1 ? 'disarmed': 'armed'))
+         , 'ui_source': (ui_source_field == 0 ? 'ppm' : 'mavlink')
+         , 'yaw_mode':  (yaw_mode_field == 0 ? 'rate' : 'heading')
+         , 'thr_mode':  (thr_mode_field == 0 ? 'direct' : 'autothrottle')
+         , 'autothr_src': (athr_src_field == 0 ? 'ui' : 'nav')
+         , 'stab_src': (stab_src_field == 0 ? 'ui' : 'nav')
+         , 'head_src': (head_src_field == 0 ? 'ui' : 'nav')
+         };
+};
+

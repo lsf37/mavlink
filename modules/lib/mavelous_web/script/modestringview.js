@@ -32,13 +32,13 @@ Mavelous.ModeStringView.prototype.initialize = function() {
  * Handles HEARTBEAT messages.
  */
 Mavelous.ModeStringView.prototype.onHeartbeat = function() {
-  var modestring = Mavelous.util.heartbeat.modestring(this.heartbeat);
+  var modestring = Mavelous.util.heartbeat.mode_display(this.heartbeat);
   var armed = Mavelous.util.heartbeat.armed(this.heartbeat);
   if (modestring) {
     if (armed) {
-      modestring += ' <span class="ok">ARMED</span>';
+      modestring += ' <br><span class="ok">ARMED</span>';
     } else {
-      modestring += ' <span class="slow">DISARMED</span>';
+      modestring += ' <br><span class="slow">DISARMED</span>';
     }
     this.$el.html(modestring);
   }
