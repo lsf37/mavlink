@@ -197,6 +197,8 @@ class MPState(object):
         self.select_extra = {}
         self.msg_queue = Queue.Queue()
 
+        self.smaccm_nav = SmaccmNav()
+
     def queue_message(self, message):
         logging.info('Queueing message %s', message)
         self.msg_queue.put(message)
@@ -213,6 +215,49 @@ class MPState(object):
             if not m.linkerror:
                 return m
         return self.mav_master[self.settings.link-1]
+
+class EdgeTriggered:
+    def __init__(self, timeout=333):
+        self.last = False
+        self.time = 0
+        self.timeout = timeout * 1000 # ms to usec
+    def sample(self,s):
+        if s and not self.last:
+            t = get_usec()
+            if (t - self.time) > self.timeout:
+                self.time = t
+                self.last = s
+                return True
+        if not s:
+            self.last = s
+        return False
+
+class SmaccmNav:
+    def __init__(self):
+        self._u = EdgeTriggered()
+        self._d = EdgeTriggered()
+        self._l = EdgeTriggered()
+        self._r = EdgeTriggered()
+        self._stop = EdgeTriggered()
+        self._clear = EdgeTriggered()
+    def udlr(self,u,d,l,r):
+        if self._u.sample(u):
+            smaccm_nav_altitude(0.5)
+        if self._d.sample(d):
+            smaccm_nav_altitude(-0.5)
+        if self._l.sample(l):
+            smaccm_nav_heading(-30)
+        if self._r.sample(r):
+            smaccm_nav_heading(30)
+    def stop(self,v):
+        if self._stop.sample(v):
+            smaccm_nav_heading(0)
+            smaccm_nav_altitude(0)
+    def clear(self,v):
+        if self._clear.sample(v):
+            smaccm_nav_clear()
+
+
 
 
 def get_usec():
@@ -347,25 +392,25 @@ def cmd_stream_rate(args):
 
 def cmd_left(args):
     if len(args) == 0:
-        smaccm_nav_rotate(-90)
+        smaccm_nav_heading(-90)
     elif len(args) == 1:
         try:
             i = int(args[0])
         except:
             print("invalid argument, must be integer number in degrees")
-        smaccm_nav_rotate(-1*i)
+        smaccm_nav_heading(-1*i)
     else:
         print("invalid arguments, expects one integer arg")
 
 def cmd_right(args):
     if len(args) == 0:
-        smaccm_nav_rotate(90)
+        smaccm_nav_heading(90)
     elif len(args) == 1:
         try:
             i = int(args[0])
         except:
             print("invalid argument, must be integer number in degrees")
-        smaccm_nav_rotate(i)
+        smaccm_nav_heading(i)
     else:
         print("invalid arguments, expects one integer arg")
 
@@ -394,7 +439,7 @@ def cmd_down(args):
         print("invalid arguments, expects one integer arg")
 
 def cmd_nonav(args):
-    smaccm_nav_reset();
+    smaccm_nav_clear();
 
 def process_waypoint_request(m, master):
     '''process a waypoint request from the master'''
@@ -1678,8 +1723,8 @@ def smaccm_nav_heading(offset):
     newhead_sum  = math.radians(current_heading) + math.radians(offset)
     newhead_wrapped = math.degrees(zero2pidomain(newhead_sum))
     newhead = int(newhead_wrapped * 100)
-    mpstate.console.writeln("current heading %f, rotating by %f degrees to %f (centidegrees %d)"
-        %(current_heading, offset, newhead_wrapped, newhead))
+    mpstate.console.writeln('current heading %f, rotating by %f degrees to %f'
+        %(current_heading, offset, newhead_wrapped))
     mpstate.master().mav.smaccmpilot_nav_cmd_send(
             0,     # autoland_active
             0,     # autoland_complete
@@ -1700,6 +1745,8 @@ def smaccm_nav_altitude(offset):
         return
     current_alt = mpstate.status.msgs['VFR_HUD'].alt # float in m
     newalt_mm = int((current_alt + offset) * 1000)
+    mpstate.console.writeln('current alt %f, changing by %f to %f'
+        %(current_alt, offset, float(newalt_mm) / 1000.0))
     mpstate.master().mav.smaccmpilot_nav_cmd_send(
             0,     # autoland_active
             0,     # autoland_complete
@@ -1715,7 +1762,8 @@ def smaccm_nav_altitude(offset):
             0,     # vel_y_set
             0)     # vel_set_valid
 
-def smaccm_nav_reset():
+def smaccm_nav_clear():
+    mpstate.console.writeln('clearing nav controller setpoints')
     mpstate.master().mav.smaccmpilot_nav_cmd_send(
             -1,     # autoland_active
             -1,     # autoland_complete
