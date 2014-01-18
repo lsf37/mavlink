@@ -240,25 +240,76 @@ class SmaccmNav:
         self._r = EdgeTriggered()
         self._stop = EdgeTriggered()
         self._clear = EdgeTriggered()
+        self.alt_setpt = None
+        self.head_setpt = None
+        self.period = mavutil.periodic_event(100)
     def udlr(self,u,d,l,r):
+        s = False
         if self._u.sample(u):
-            smaccm_nav_altitude(0.5)
+            self.new_altitude(0.5)
+            s = True
         if self._d.sample(d):
-            smaccm_nav_altitude(-0.5)
+            self.new_altitude(-0.5)
+            s = True
         if self._l.sample(l):
-            smaccm_nav_heading(-30)
+            self.new_heading(-30)
+            s = True
         if self._r.sample(r):
-            smaccm_nav_heading(30)
+            self.new_heading(30)
+            s = True
+        if s:
+            self.send()
     def stop(self,v):
         if self._stop.sample(v):
-            smaccm_nav_heading(0)
-            smaccm_nav_altitude(0)
+            self.new_heading(0)
+            self.new_altitude(0)
+            self.send()
     def clear(self,v):
         if self._clear.sample(v):
-            smaccm_nav_clear()
+            self.clear_alt_heading()
+            self.send()
 
+    def new_altitude(self,offset):
+        if 'VFR_HUD' not in mpstate.status.msgs:
+            return
+        current_alt = mpstate.status.msgs['VFR_HUD'].alt # float in m
+        newalt_mm = int((current_alt + offset) * 1000)
+        mpstate.console.writeln('current alt %f, changing by %f to %f'
+            %(current_alt, offset, float(newalt_mm) / 1000.0))
+        self.alt_setpt = newalt_mm
 
+    def new_heading(self,offset):
 
+        if 'VFR_HUD' not in mpstate.status.msgs:
+            return
+        current_heading = mpstate.status.msgs['VFR_HUD'].heading
+        newhead_sum  = math.radians(current_heading) + math.radians(offset)
+        newhead_wrapped = math.degrees(zero2pidomain(newhead_sum))
+        newhead = int(newhead_wrapped * 100)
+        mpstate.console.writeln('current heading %f, rotating by %f degrees to %f'
+            %(current_heading, offset, newhead_wrapped))
+        self.head_setpt = newhead
+
+    def clear_alt_heading(self):
+        mpstate.console.writeln('clearing nav controller setpoints')
+        self.alt_setpt = None
+        self.head_setpt = None
+
+    def send(self):
+        mpstate.master().mav.smaccmpilot_nav_cmd_send(
+            -1,     # autoland_active
+            -1,     # autoland_complete
+            self.alt_setpt if self.alt_setpt else 0,     # alt_set
+            1500,     # alt_rate_set
+            1 if self.alt_setpt else -1,     # alt_set_valid
+            self.head_setpt if self.head_setpt else 0,     # heading_set
+            1 if self.head_setpt else -1,     # heading_set_valid
+            0,     # lat_set
+            0,     # lon_set
+            -1,     # lat_lon_set_valid
+            0,     # vel_x_set
+            0,     # vel_y_set
+            -1)     # vel_set_valid
 
 def get_usec():
     '''time since 1970 in microseconds'''
@@ -392,49 +443,49 @@ def cmd_stream_rate(args):
 
 def cmd_left(args):
     if len(args) == 0:
-        smaccm_nav_heading(-90)
+        mpstate.smaccm_nav.new_heading(-90)
     elif len(args) == 1:
         try:
             i = int(args[0])
         except:
             print("invalid argument, must be integer number in degrees")
-        smaccm_nav_heading(-1*i)
+        mpstate.smaccm_nav.new_heading(-1*i)
     else:
         print("invalid arguments, expects one integer arg")
 
 def cmd_right(args):
     if len(args) == 0:
-        smaccm_nav_heading(90)
+        mpstate.smaccm_nav.new_heading(90)
     elif len(args) == 1:
         try:
             i = int(args[0])
         except:
             print("invalid argument, must be integer number in degrees")
-        smaccm_nav_heading(i)
+        mpstate.smaccm_nav.new_heading(i)
     else:
         print("invalid arguments, expects one integer arg")
 
 def cmd_up(args):
     if len(args) == 0:
-        smaccm_nav_altitude(1)
+        mpstate.smaccm_nav.new_altitude(1)
     elif len(args) == 1:
         try:
             i = float(args[0])
         except:
             print("invalid argument, must be a float in degrees")
-        smaccm_nav_altitude(i)
+        mpstate.smaccm_nav.new_altitude(i)
     else:
         print("invalid arguments, expects one integer arg")
 
 def cmd_down(args):
     if len(args) == 0:
-        smaccm_nav_altitude(-1)
+        mpstate.smaccm_nav.new_altitude(-1)
     elif len(args) == 1:
         try:
             i = float(args[0])
         except:
             print("invalid argument, must be a float in degrees")
-        smaccm_nav_altitude(-1*i)
+        mpstate.smaccm_nav.new_altitude(-1*i)
     else:
         print("invalid arguments, expects one integer arg")
 
@@ -1565,6 +1616,9 @@ def periodic_tasks():
     if battery_period.trigger():
         battery_report()
 
+    if mpstate.smaccm_nav.period.trigger():
+        mpstate.smaccm_nav.send()
+
     if mpstate.override_period.trigger(): # Period for override messages
         if (# Not an empty override message
             mpstate.status.override != [ 0 ] * 8 and
@@ -1663,7 +1717,7 @@ def main_loop():
                         print(msg)
                     # on an exception, remove it from the select list
                     mpstate.select_extra.pop(fd)
-                    
+
 
 
 def input_loop():
@@ -1715,69 +1769,6 @@ def zero2pidomain(angle):
     else:
         return twopi - wrapped
 
-
-def smaccm_nav_heading(offset):
-    if 'VFR_HUD' not in mpstate.status.msgs:
-        return
-    current_heading = mpstate.status.msgs['VFR_HUD'].heading
-    newhead_sum  = math.radians(current_heading) + math.radians(offset)
-    newhead_wrapped = math.degrees(zero2pidomain(newhead_sum))
-    newhead = int(newhead_wrapped * 100)
-    mpstate.console.writeln('current heading %f, rotating by %f degrees to %f'
-        %(current_heading, offset, newhead_wrapped))
-    mpstate.master().mav.smaccmpilot_nav_cmd_send(
-            0,     # autoland_active
-            0,     # autoland_complete
-            0,     # alt_set
-            0,     # alt_rate_set
-            0,     # alt_set_valid
-            newhead, # heading_set
-            1,     # heading_set_valid
-            0,     # lat_set
-            0,     # lon_set
-            0,     # lat_lon_set_valid
-            0,     # vel_x_set
-            0,     # vel_y_set
-            0)     # vel_set_valid
-
-def smaccm_nav_altitude(offset):
-    if 'VFR_HUD' not in mpstate.status.msgs:
-        return
-    current_alt = mpstate.status.msgs['VFR_HUD'].alt # float in m
-    newalt_mm = int((current_alt + offset) * 1000)
-    mpstate.console.writeln('current alt %f, changing by %f to %f'
-        %(current_alt, offset, float(newalt_mm) / 1000.0))
-    mpstate.master().mav.smaccmpilot_nav_cmd_send(
-            0,     # autoland_active
-            0,     # autoland_complete
-            newalt_mm,# alt_set
-            1000,  # alt_rate_set
-            1,     # alt_set_valid
-            0,     # heading_set
-            0,     # heading_set_valid
-            0,     # lat_set
-            0,     # lon_set
-            0,     # lat_lon_set_valid
-            0,     # vel_x_set
-            0,     # vel_y_set
-            0)     # vel_set_valid
-
-def smaccm_nav_clear():
-    mpstate.console.writeln('clearing nav controller setpoints')
-    mpstate.master().mav.smaccmpilot_nav_cmd_send(
-            -1,     # autoland_active
-            -1,     # autoland_complete
-            0,     # alt_set
-            0,     # alt_rate_set
-            -1,     # alt_set_valid
-            0,     # heading_set
-            -1,     # heading_set_valid
-            0,     # lat_set
-            0,     # lon_set
-            -1,     # lat_lon_set_valid
-            0,     # vel_x_set
-            0,     # vel_y_set
-            -1)     # vel_set_valid
 
 if __name__ == '__main__':
 
