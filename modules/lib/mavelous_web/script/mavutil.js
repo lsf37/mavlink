@@ -164,7 +164,8 @@ Mavelous.util.smaccmpilot.mode_display = function(msg) {
     'UI: '  + mode_dict['ui_source'] + '<br />' +
     'Thr: ' + mode_dict['thr_mode']  + ' ' + mode_dict['autothr_src'] + '<br />' +
     'Stab: '  + mode_dict['stab_src'] + '<br />' +
-    'Yaw: ' + mode_dict['head_src'] + ' ' + mode_dict['yaw_mode']
+    'Yaw: ' + mode_dict['head_src'] + ' ' + mode_dict['yaw_mode'] + '<br />' +
+    'Commsec: ' + mode_dict['commsec_stat']
     )
 
   return JSON.stringify(mode_dict);
@@ -184,15 +185,27 @@ Mavelous.util.smaccmpilot.custom_mode = function (custom_mode) {
   var stab_src_field = (custom_mode & 0x20) >> 5;
   var head_src_field = (custom_mode & 0x40) >> 6;
   var yaw_mode_field = (custom_mode & 0x80) >> 7;
+  var commsec_stat_field = (custom_mode & 0x100) >> 8;
 
-  return { 'armed_mode': (armed_field == 0 ? 'safe':
-                          (armed_field == 1 ? 'disarmed': 'armed'))
-         , 'ui_source': (ui_source_field == 0 ? 'ppm' : 'mavlink')
+  var green = function (text) {
+    return ('<span class="ok">' + text + '</span>')
+  };
+  var yellow = function (text) {
+    return ('<span class="slow">' + text + '</span>')
+  };
+  var red = function (text) {
+    return ('<span class="error">' + text + '</span>')
+  };
+
+  return { 'armed_mode': (armed_field == 0 ? yellow('safe'):
+                          (armed_field == 1 ? yellow('disarmed'): green('armed')))
+         , 'ui_source': (ui_source_field == 0 ? green('ppm') : yellow('mavlink'))
          , 'yaw_mode':  (yaw_mode_field == 0 ? 'rate' : 'heading')
          , 'thr_mode':  (thr_mode_field == 0 ? 'direct' : 'autothrottle')
-         , 'autothr_src': (athr_src_field == 0 ? 'ui' : 'nav')
-         , 'stab_src': (stab_src_field == 0 ? 'ui' : 'nav')
-         , 'head_src': (head_src_field == 0 ? 'ui' : 'nav')
+         , 'autothr_src': (athr_src_field == 0 ? green('ui') : yellow('nav'))
+         , 'stab_src': (stab_src_field == 0 ? green('ui'): yellow('nav'))
+         , 'head_src': (head_src_field == 0 ? green('ui') : yellow('nav'))
+         , 'commsec_stat' : (commsec_stat_field == 0 ? green('secure') : red('alarm'))
          };
 };
 
