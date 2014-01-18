@@ -242,7 +242,7 @@ class SmaccmNav:
         self._clear = EdgeTriggered()
         self.alt_setpt = None
         self.head_setpt = None
-        self.period = mavutil.periodic_event(100)
+        self.period = mavutil.periodic_event(3)
     def udlr(self,u,d,l,r):
         s = False
         if self._u.sample(u):
