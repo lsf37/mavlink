@@ -76,14 +76,17 @@ class JoystickDescr:
         self.stop_button = args.get('stop_button')
         self.clear_button = args.get('clear_button')
 
+rpy_sens = 0.5
+thr_sens = 0.25
+
 joystick_descrs = [
     # Logitech Wireless F710 (recognized as a RumblePad 2 on Fedora by jstest).
     # Assumes D mode. 4 axes usable
     JoystickDescr('Logitech Logitech Cordless RumblePad 2'
-        , roll_axis = PosAxis(2, 0.5)
-        , pitch_axis = NegAxis(3, 0.5)
-        , thr_axis = NegAxis(1, 0.25)
-        , yaw_axis = PosAxis(0, 0.5)
+        , roll_axis = PosAxis(2, rpy_sens)
+        , pitch_axis = NegAxis(3, rpy_sens)
+        , thr_axis = NegAxis(1, thr_sens)
+        , yaw_axis = PosAxis(0, rpy_sens)
         , rcovr_button = Button(4)
         , up_button = HatButton(0,0,1)
         , down_button = HatButton(0,0,-1)
@@ -94,10 +97,10 @@ joystick_descrs = [
         )
     # Logitech Wireless F310, X mode. 4 axes usable
     , JoystickDescr('Generic X-Box pad'
-        , roll_axis = PosAxis(3, 0.5)
-        , pitch_axis = NegAxis(4, 0.5)
-        , thr_axis = NegAxis(1, 0.25)
-        , yaw_axis = PosAxis(0, 0.5)
+        , roll_axis = PosAxis(3, rpy_sens)
+        , pitch_axis = NegAxis(4, rpy_sens)
+        , thr_axis = NegAxis(1, thr_sens)
+        , yaw_axis = PosAxis(0, rpy_sens)
         , rcovr_button = Button(4)
         , up_button = HatButton(0,0,1)
         , down_button = HatButton(0,0,-1)
