@@ -25,7 +25,7 @@ goog.addDependency("../../../../script/mavutil.js", ['Mavelous.util'], ['goog.ob
 goog.addDependency("../../../../script/mission.js", ['mavelous', 'mavelous.Mission', 'mavelous.MissionItem', 'mavelous.MissionItemType'], ['goog.array', 'goog.asserts', 'goog.object']);
 goog.addDependency("../../../../script/missionui.js", ['mavelous.ui', 'mavelous.ui.Input', 'mavelous.ui.Label', 'mavelous.ui.Mission', 'mavelous.ui.MissionItemRenderer', 'mavelous.ui.MissionRenderer'], ['goog.dom', 'goog.events', 'goog.events.Event', 'goog.ui.BidiInput', 'goog.ui.Checkbox', 'goog.ui.Checkbox.State', 'goog.ui.Container', 'goog.ui.ContainerRenderer', 'goog.ui.Control', 'goog.ui.ControlRenderer', 'goog.ui.FlatMenuButtonRenderer', 'goog.ui.Select', 'goog.ui.registry', 'mavelous.Mission', 'mavelous.MissionItem', 'mavelous.MissionItemType']);
 goog.addDependency("../../../../script/modestringview.js", ['Mavelous.ModeStringView'], ['Mavelous.util']);
-goog.addDependency("../../../../script/pfd.js", ['Mavelous.ArtificialHorizon', 'Mavelous.PFD', 'Mavelous.Tape'], ['goog.dom']);
+goog.addDependency("../../../../script/newpfd.js", ['Mavelous.PFD'], []);
 goog.addDependency("../../../../script/pfdsettings.js", ['Mavelous.PFDSettingsModel'], ['goog.json']);
 goog.addDependency("../../../../script/pfdview.js", ['Mavelous.PFDView'], ['Mavelous.PFD', 'Mavelous.PFDSettingsModel']);
 goog.addDependency("../../../../script/popoverview.js", ['Mavelous.PopoverView', 'Mavelous.SelectionModel'], []);

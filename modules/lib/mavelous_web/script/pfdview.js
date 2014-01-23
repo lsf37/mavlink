@@ -4,7 +4,6 @@ goog.require('Mavelous.PFD');
 goog.require('Mavelous.PFDSettingsModel');
 
 
-
 /**
  * Primary flight display Backbone view.
  * @param {Object} properties The view properties.
@@ -35,12 +34,16 @@ Mavelous.PFDView.prototype.initialize = function() {
                                        this.onAttitudeChange, this);
   this.vfrHud = mavlinkSrc.subscribe('VFR_HUD',
                                      this.onVfrHudChange, this);
-  this.navControllerOutput = mavlinkSrc.subscribe(
-      'NAV_CONTROLLER_OUTPUT', this.onNavControllerOutputChange, this);
+  this.navLaw = mavlinkSrc.subscribe(
+      'SMACCMPILOT_NAV_CMD', this.onNavLaw, this);
 
   /* Create pfd object */
-  this.pfd = new Mavelous.PFD(this.options['drawingid']);
 
+  this.pfdcanvas = document.getElementById(this.options['drawingid']);
+  paper.setup(this.pfdcanvas);
+  this.pfd = new Mavelous.PFD(new paper.Point(0,0),
+                   this.pfdcanvas.width, this.pfdcanvas.height);
+  this.pfd.airspeed.setTarget('');
   /* Connect to settings model */
   if (this.options['settingsModel']) {
     this.settingsModel = this.options['settingsModel'];
@@ -63,7 +66,7 @@ Mavelous.PFDView.prototype.initialize = function() {
   /* Set off each callback to initialize view */
   this.onAttitudeChange();
   this.onVfrHudChange();
-  this.onNavControllerOutputChange();
+  this.onNavLaw();
 };
 
 
@@ -71,8 +74,9 @@ Mavelous.PFDView.prototype.initialize = function() {
  * Handles ATTITUDE mavlink messages.
  */
 Mavelous.PFDView.prototype.onAttitudeChange = function() {
-  this.pfd.setAttitude(this.attitude.get('pitch'),
-                       this.attitude.get('roll'));
+  var p = this.attitude.get('pitch') || 0;
+  var r = this.attitude.get('roll') || 0;
+  this.pfd.horizon.setPitchRoll(p,r);
   this.pfd.draw();
 };
 
@@ -83,12 +87,24 @@ Mavelous.PFDView.prototype.onAttitudeChange = function() {
 Mavelous.PFDView.prototype.onVfrHudChange = function() {
   var alt = this.vfrHud.get('alt');
   if (alt === undefined) {
+    this.pfd.altitude.setIndicated('');
   } else {
-    this.pfd.setAltitude(alt);
-    $('#pfd_altdisplay_hack').html(alt.toFixed(3).toString() + 'm');
+    this.pfd.altitude.setIndicated(alt.toFixed(1));
   }
   var airSpeed = this.vfrHud.get('airspeed');
-  this.pfd.setSpeed(airSpeed);
+  if (airSpeed === undefined) {
+    this.pfd.airspeed.setIndicated('');
+  } else {
+    this.pfd.airspeed.setIndicated(airSpeed);
+  };
+
+  var heading = this.vfrHud.get('heading');
+  if (heading=== undefined) {
+    this.pfd.heading.setIndicated('');
+  } else {
+    if (heading < 0) { heading = 360 + heading; }
+    this.pfd.heading.setIndicated(heading.toFixed(0));
+  };
   this.pfd.draw();
 };
 
@@ -96,14 +112,26 @@ Mavelous.PFDView.prototype.onVfrHudChange = function() {
 /**
  * Handles NAV_CONTROLLER_OUTPUT mavlink messages.
  */
-Mavelous.PFDView.prototype.onNavControllerOutputChange = function() {
-  var alt_error = this.navControllerOutput.get('alt_error');
-  var aspd_error = this.navControllerOutput.get('aspd_error');
-  if (Math.abs(alt_error) > 0) {
-    this.pfd.setTargetAltitude(this.vfrHud.get('alt') + alt_error);
+Mavelous.PFDView.prototype.onNavLaw = function() {
+
+  var alt_set_valid = this.navLaw.get('alt_set_valid') || 0;
+  var alt_setpt = this.navLaw.get('alt_set');
+
+  if (alt_set_valid > 0 && alt_setpt) {
+    alt = alt_setpt / 1000.0;
+    this.pfd.altitude.setTarget(alt.toFixed(1));
+  } else {
+    this.pfd.altitude.setTarget('');
   }
-  if (Math.abs(aspd_error) > 0) {
-    this.pfd.setTargetSpeed(this.vfrHud.get('airspeed') + aspd_error);
+
+  var heading_set_valid = this.navLaw.get('heading_set_valid') || 0;
+  var heading_setpt = this.navLaw.get('heading_set');
+
+  if (heading_set_valid > 0 && heading_setpt) {
+    head = heading_setpt / 100.0;
+    this.pfd.heading.setTarget(head.toFixed(0));
+  } else {
+    this.pfd.heading.setTarget('');
   }
 };
 
@@ -176,8 +204,5 @@ Mavelous.PFDView.prototype.setSize = function(size) {
       .height(h);
     this.blockel.width(w);
     this.statel.width(w);
-
-    /* Set PFD size by resulting dimensions of this.pfdel */
-    this.pfd.setSize(this.pfdel.width(), this.pfdel.height());
   }
 };

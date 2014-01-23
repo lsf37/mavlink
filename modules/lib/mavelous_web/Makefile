@@ -32,7 +32,7 @@ JS_FILES = app.js \
 	   mission.js \
 	   missionui.js \
 	   modestringview.js \
-	   pfd.js \
+	   newpfd.js \
 	   pfdsettings.js \
 	   pfdview.js \
 	   popoverview.js \
@@ -44,7 +44,8 @@ JS_FILES = app.js \
 
 JS_SRCS = $(addprefix ${JS_SCRIPT_DIR}/,${JS_FILES})
 
-MAVELOUS_TARGETS = ${JS_SCRIPT_DIR}/mavelous.min.js ${JS_SCRIPT_DIR}/mavelous-deps.js ${WEB_DIR}/index.html ${WEB_DIR}/index_compiled.html
+# MAVELOUS_TARGETS = ${JS_SCRIPT_DIR}/mavelous.min.js ${JS_SCRIPT_DIR}/mavelous-deps.js ${WEB_DIR}/index.html ${WEB_DIR}/index_compiled.html
+MAVELOUS_TARGETS = ${JS_SCRIPT_DIR}/mavelous-deps.js ${WEB_DIR}/index.html
 
 .PHONY: all build deps lint lintfix clean build-tool-deps
 
@@ -80,12 +81,13 @@ ${JS_SCRIPT_DIR}/mavelous.min.js: ${JS_SRCS} ${WEB_DIR}/externs/*.js
 	    --compiler_flags="--compilation_level=SIMPLE_OPTIMIZATIONS" \
 	    --compiler_flags="--summary_detail_level=3" \
 	    --compiler_flags="--warning_level=VERBOSE" \
+	    --compiler_flags="--language_in=ECMASCRIPT5" \
 	    --compiler_flags="--externs=${WEB_DIR}/externs/jquery-1.7.js" \
 	    --compiler_flags="--externs=${WEB_DIR}/externs/backbone-0.9.1.js" \
-	    --compiler_flags="--externs=${WEB_DIR}/externs/kinetic-4.1.2.js" \
 	    --compiler_flags="--externs=${WEB_DIR}/externs/leaflet-0.5.js" \
 	    --compiler_flags="--externs=${WEB_DIR}/externs/twitter-bootstrap.js" \
 	    --compiler_flags="--externs=${WEB_DIR}/externs/underscore-1.3.1.js" \
+	    --compiler_flags="--externs=${WEB_DIR}/externs/paper-core-0.9.15.js" \
 	    --compiler_flags="--generate_exports" \
 	    --compiler_flags="--js_output_file=$@"
 

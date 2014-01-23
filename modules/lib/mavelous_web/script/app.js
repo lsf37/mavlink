@@ -92,7 +92,7 @@ Mavelous.App.prototype.start = function() {
   this.pfdView = new Mavelous.PFDView({
     'mavlinkSrc': this.mavlinkAPI,
     'settingsModel': this.pfdSettingsModel,
-    'drawingid': 'pfdview',
+    'drawingid': 'pfdcanvas',
     'blockel': $('#pfdblock'),
     'statel': $('#pfdstatus')
   });
