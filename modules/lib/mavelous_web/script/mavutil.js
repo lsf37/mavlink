@@ -164,8 +164,7 @@ Mavelous.util.smaccmpilot.mode_display = function(msg) {
     'UI: '  + mode_dict['ui_source'] + '<br />' +
     'Thr: ' + mode_dict['thr_mode']  + ' ' + mode_dict['autothr_src'] + '<br />' +
     'Stab: '  + mode_dict['stab_src'] + '<br />' +
-    'Yaw: ' + mode_dict['head_src'] + ' ' + mode_dict['yaw_mode'] + '<br />' +
-    'Commsec: ' + mode_dict['commsec_stat']
+    'Yaw: ' + mode_dict['head_src'] + ' ' + mode_dict['yaw_mode'] 
     )
 
   return JSON.stringify(mode_dict);
