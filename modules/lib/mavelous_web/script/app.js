@@ -99,13 +99,6 @@ Mavelous.App.prototype.start = function() {
   });
 
   this.guideModel = new Mavelous.GuideModel({ 'mavlinkSrc': this.mavlinkAPI });
-  this.guideAltView = new Mavelous.GuideAltitudeView({
-    'model': this.guideModel,
-    'input': $('#guidealt-input'),
-    'submit': $('#guidealt-submit'),
-    'text': $('#guidealt-text')
-  });
-
   this.leafletDroneIcon = new Mavelous.LeafletDroneIconModel();
   this.leafletProviders = new Mavelous.LeafletProviders();
 
