@@ -252,10 +252,10 @@ class SmaccmNav:
             self.new_altitude(-0.5)
             s = True
         if self._l.sample(l):
-            self.new_heading(-30)
+            self.new_heading(-60)
             s = True
         if self._r.sample(r):
-            self.new_heading(30)
+            self.new_heading(60)
             s = True
         if s:
             self.send()
