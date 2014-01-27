@@ -205,7 +205,7 @@ Mavelous.util.smaccmpilot.custom_mode = function (custom_mode) {
          , 'autothr_src': (athr_src_field == 0 ? green('ui') : yellow('nav'))
          , 'stab_src': (stab_src_field == 0 ? green('ui'): yellow('nav'))
          , 'head_src': (head_src_field == 0 ? green('ui') : yellow('nav'))
-         , 'commsec_stat' : (commsec_stat_field == 0 ? green('secure') : red('alarm'))
+         , 'commsec_stat' : (commsec_stat_field == 0 ? green('ok') : red('alarm'))
          };
 };
 

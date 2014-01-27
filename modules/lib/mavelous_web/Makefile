@@ -32,6 +32,7 @@ JS_FILES = app.js \
 	   mission.js \
 	   missionui.js \
 	   modestringview.js \
+	   commsecview.js \
 	   newpfd.js \
 	   pfdsettings.js \
 	   pfdview.js \

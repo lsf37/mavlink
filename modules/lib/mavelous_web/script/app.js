@@ -20,6 +20,7 @@ goog.require('Mavelous.LeafletProviders');
 goog.require('Mavelous.LeafletView');
 goog.require('Mavelous.MavlinkAPI');
 goog.require('Mavelous.ModeStringView');
+goog.require('Mavelous.CommsecView');
 goog.require('Mavelous.PFD');
 goog.require('Mavelous.PFDSettingsModel');
 goog.require('Mavelous.PFDView');
@@ -154,6 +155,11 @@ Mavelous.App.prototype.start = function() {
   this.modeStringView = new Mavelous.ModeStringView({
     'mavlinkSrc': this.mavlinkAPI,
     'el': $('#pfd_modestringview')
+  });
+
+  this.commsecView = new Mavelous.CommsecView ({
+    'mavlinkSrc': this.mavlinkAPI,
+    'el': $('#pfd_commsecview')
   });
 
   this.flightModeModel = new Mavelous.FlightModeModel({
