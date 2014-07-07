@@ -29,7 +29,7 @@ for d in [ 'pymavlink',
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), 'modules'))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), 'modules', 'lib'))
 
-import select, textconsole, mavproxy_joystick
+import select, textconsole
 
 class MPSettings(object):
     def __init__(self):
