@@ -160,8 +160,8 @@ Mavelous.util.smaccmpilot.mode_display = function(msg) {
   var custom_mode = msg.get('custom_mode');
   var mode_dict = Mavelous.util.smaccmpilot.custom_mode(custom_mode);
   return (
-    'Motors: ' + mode_dict['armed_mode'] + '<br />' +
-    'UI: '  + mode_dict['ui_source'] + '<br />' +
+//    'Motors: ' + mode_dict['armed_mode'] + '<br />' +
+//    'UI: '  + mode_dict['ui_source'] + '<br />' +
     'Thr: ' + mode_dict['thr_mode']  + ' ' + mode_dict['autothr_src'] + '<br />' +
     'Stab: '  + mode_dict['stab_src'] + '<br />' +
     'Yaw: ' + mode_dict['head_src'] + ' ' + mode_dict['yaw_mode'] 

@@ -43,22 +43,24 @@ Mavelous.CommsecView.prototype.initialize = function() {
 Mavelous.CommsecView.prototype.onHeartbeat = function() {
   var custom_mode = this.hb.get('custom_mode');
   var mode_dict = Mavelous.util.smaccmpilot.custom_mode(custom_mode);
-  this.$hb.html('Commsec: ' + mode_dict['commsec_stat'])
+//  this.$hb.html('Commsec: ' + mode_dict['commsec_stat'])
 };
 /**
  * Handles VEH_COMMSEC messages.
  */
 Mavelous.CommsecView.prototype.onMsg = function() {
   var m = this.msg.toJSON();
-  var s = 'good messages: ' + m.good_msgs.toString() + '<br />' +
-          'bad messages: ' + m.bad_msgs.toString() + '<br />';
-
+  var all = parseInt(m.good_msgs) + parseInt(m.bad_msgs);
+  var s = 'GCS messages: ' + all + '/' + m.bad_msgs + '<br />';
+	
+/*
   if (m.time > 500 || m.commsec_err > 0) {
     var errcode = (m.commsec_err == 0)?'<span class="ok">ok</span>':
       '<span class="error">' + m.commsec_err.toString() + '</span>';
     s += 'last good msg: ' + (m.time / 1000.0).toFixed(1) + 's ago<br />' +
          'error code: ' + errcode;
   }
+*/
 
   this.$stat.html(s);
 };

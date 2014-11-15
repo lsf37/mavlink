@@ -292,14 +292,17 @@ Mavelous.CommStatusButtonView.prototype.setButton = function(state) {
     lclass = 'btn-inverse';
     html = 'Link: None';
   } else if (state === Mavelous.CommStatusModel.State.OK) {
-    lclass = 'btn-success';
-    html = 'Link: Good';
+//    lclass = 'btn-success';
+//    html = 'Link: Good';
+    html = 'Link';      
   } else if (state === Mavelous.CommStatusModel.State.TIMED_OUT_ONCE) {
-    lclass = 'btn-warning';
-    html = 'Link: Lost';
+//    lclass = 'btn-warning';
+//    html = 'Link: Lost';
+    html = 'Link';      
   } else if (state === Mavelous.CommStatusModel.State.TIMED_OUT_MANY) {
-    lclass = 'btn-danger';
-    html = 'Link: Lost';
+//    lclass = 'btn-danger';
+//    html = 'Link: Lost';
+    html = 'Link';      
   } else {
     lclass = 'btn-danger';
     html = 'Link: Error';
